@@ -27,6 +27,16 @@
 .App-link {
   color: #61dafb;
 }
+.app-layout {
+    display: flex;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 250px; /* Lebar yang sama dengan sidebar */
+    width: calc(100% - 250px); /* Kalkulasi lebar konten */
+}
 
 @keyframes App-logo-spin {
   from {

@@ -1,0 +1,116 @@
+/* src/components/Sidebar.css */
+
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: #1a2a45;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+    background-color: #111d32;
+    letter-spacing: 1px;
+}
+
+.sidebar-nav {
+    flex-grow: 1; /* Membuat nav mengisi ruang yang tersedia */
+}
+
+/* Mengatur style dasar untuk semua item menu (NavLink dan button) */
+.menu-item, .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Jarak antara ikon dan teks */
+    padding: 1rem 1.5rem;
+    color: #e0e0e0;
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.menu-item:hover, .dropdown-toggle:hover {
+    background-color: #2a3a55;
+}
+
+.menu-item.active {
+    background-color: #f9b115;
+    color: #1a2a45;
+    font-weight: bold;
+}
+
+/* --- Dropdown Specific --- */
+.dropdown-toggle {
+    justify-content: space-between;
+}
+
+.arrow {
+    transition: transform 0.3s ease;
+}
+
+.arrow.open {
+    transform: rotate(180deg);
+}
+
+.submenu {
+    background-color: #111d32;
+    overflow: hidden;
+}
+
+.submenu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0.8rem 1.5rem 0.8rem 2.5rem; /* Lebih menjorok ke dalam */
+    color: #c0c0c0;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.submenu-item:hover {
+    background-color: #2a3a55;
+}
+
+.submenu-item.active {
+    color: #f9b115;
+    font-weight: bold;
+}
+
+/* --- Footer & Logout Button --- */
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid #2a3a55;
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #f9b115; /* Warna kuning */
+    color: #1a2a45; /* Teks warna gelap agar kontras */
+    transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+    background-color: #ffc13b; /* Warna kuning sedikit lebih cerah saat hover */
+}
