@@ -12,6 +12,8 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('authToken'));
     const [loading, setLoading] = useState(true);
+    // 1. Tambahkan state untuk search query
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         // Fungsi ini berjalan saat aplikasi pertama kali dimuat
@@ -72,8 +74,8 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Nilai yang akan dibagikan ke seluruh aplikasi
-    const value = { user, token, loading, login, logout };
+    // 2. Tambahkan searchQuery dan setSearchQuery ke dalam value
+    const value = { user, token, loading, login, logout, searchQuery, setSearchQuery };
 
     return (
         <AuthContext.Provider value={value}>

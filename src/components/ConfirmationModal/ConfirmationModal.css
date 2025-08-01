@@ -1,0 +1,36 @@
+.confirmation-modal-body p {
+    font-size: 1.1rem;
+    color: #374151;
+    margin-bottom: 1.5rem;
+}
+
+.confirmation-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.modal-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.confirm-button {
+    background-color: #ef4444; /* Merah untuk bahaya */
+    color: white;
+}
+.confirm-button:hover {
+    background-color: #dc2626;
+}
+
+.cancel-button {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+.cancel-button:hover {
+    background-color: #d1d5db;
+}

@@ -50,7 +50,50 @@ export const getDivisions = () => {
 
 export const getFiles = () => {
     return apiClient.get('/files');
-}
+};
+
+// Fungsi ini akan mengambil file sebagai blob untuk diunduh browser
+export const downloadFile = (fileId) => {
+    return apiClient.get(`/files/${fileId}`, {
+        responseType: 'blob', // Ini penting untuk handle file download
+    });
+};
+
+export const deleteFile = (fileId) => {
+    return apiClient.delete(`/files/${fileId}`);
+};
+export const getRecentFiles = () => {
+    return apiClient.get('/files/recent');
+};
+
+export const getFavorites = () => {
+    return apiClient.get('/files/favorites');
+};
+
+export const getTrashedFiles = () => {
+    return apiClient.get('/files/trashed');
+};
+
+export const toggleFavorite = (fileId) => {
+    return apiClient.post(`/files/${fileId}/favorite`);
+};
+
+export const restoreFile = (fileId) => {
+    return apiClient.post(`/files/${fileId}/restore`);
+};
+
+export const forceDeleteFile = (fileId) => {
+    return apiClient.delete(`/files/${fileId}/force`);
+};
+
+// Fungsi untuk mengunggah file
+export const uploadFile = (formData) => {
+    return apiClient.post('/files', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
 // --- Akhir dari bagian yang hilang ---
 
 
