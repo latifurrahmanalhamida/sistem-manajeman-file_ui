@@ -145,7 +145,7 @@ const DivisionUserDashboard = () => {
         if (!fileToDelete) return;
         try {
             await deleteFile(fileToDelete.id);
-            setNotification({ isOpen: true, message: 'File berhasil dihapus.', type: 'success' });
+            setNotification({ isOpen: true, message: 'File berhasil dipindahkan ke sampah.', type: 'success' });
         } catch (error) {
             setNotification({ isOpen: true, message: 'Gagal menghapus file.', type: 'error' });
         } finally {

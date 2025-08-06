@@ -1,11 +1,8 @@
-// src/components/UserProfileDropdown/UserProfileDropdown.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-// HANYA ADA SATU BARIS IMPOR DARI REACT-ROUTER-DOM
 import { useNavigate, Link } from 'react-router-dom';
 import './UserProfileDropdown.css';
-// Impor ikon yang dibutuhkan
-import { FaUserCircle, FaSignOutAlt, FaUserEdit } from 'react-icons/fa';
+import { FaUserCircle, FaSignOutAlt, FaUserEdit, FaShieldAlt } from 'react-icons/fa';
 
 const UserProfileDropdown = () => {
     const { user, logout } = useAuth();
@@ -18,7 +15,6 @@ const UserProfileDropdown = () => {
         navigate('/login');
     };
 
-    // Menutup dropdown jika klik di luar
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -39,11 +35,18 @@ const UserProfileDropdown = () => {
 
             {isOpen && (
                 <div className="dropdown-menu">
-                    {/* TAMBAHKAN LINK KE PROFIL DI SINI */}
                     <Link to="/profile" className="dropdown-item">
                         <FaUserEdit />
                         <span>Profil Saya</span>
                     </Link>
+
+                    {user && user.role === 'admin_devisi' && (
+                        <Link to="/panel-admin" className="dropdown-item">
+                            <FaShieldAlt />
+                            <span>Panel Admin</span>
+                        </Link>
+                    )}
+                    
                     <hr className="dropdown-divider" />
                     <button onClick={handleLogout} className="logout-button">
                         <FaSignOutAlt />
