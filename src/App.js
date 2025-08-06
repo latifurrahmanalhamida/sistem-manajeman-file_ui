@@ -16,6 +16,7 @@ import RecentFilesPage from './pages/RecentFilesPage';
 import FavoritesPage from './pages/FavoritesPage';
 import TrashPage from './pages/TrashPage';
 
+
 // Komponen internal untuk membungkus semua rute yang dilindungi
 const ProtectedRoutes = () => (
   <ProtectedRoute>
