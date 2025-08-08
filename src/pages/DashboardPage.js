@@ -1,8 +1,6 @@
-// src/pages/DashboardPage.js
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import apiClient, { getFiles, downloadFile, deleteFile, toggleFavorite } from '../services/api';
+import apiClient, { getFiles, downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
 import './DashboardView.css';
 
 // Impor komponen
@@ -11,7 +9,8 @@ import FileUploadForm from '../components/FileUploadForm/FileUploadForm';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
 import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
-import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar } from 'react-icons/fa';
+import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye } from 'react-icons/fa';
+import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
 
 // --- Komponen Dashboard untuk Super Admin ---
 const SuperAdminDashboard = () => {
@@ -78,42 +77,52 @@ const SuperAdminDashboard = () => {
 
 // --- Komponen Dashboard untuk Admin/User Devisi ---
 const DivisionUserDashboard = () => {
-    const { user, searchQuery } = useAuth();
+    const { user, searchQuery, loading: authLoading } = useAuth();
     const [files, setFiles] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
     const [notification, setNotification] = useState({ isOpen: false, message: '', type: '' });
     const [viewMode, setViewMode] = useState('list');
+    const [previewFile, setPreviewFile] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+    // State untuk overwrite
+    const [isOverwriteModalOpen, setOverwriteModalOpen] = useState(false);
+    const [pendingFile, setPendingFile] = useState(null);
 
     const fetchFiles = async () => {
-        setLoading(true);
+        setIsFilesLoading(true);
         try {
             const response = await getFiles();
             setFiles(response.data);
         } catch (error) {
             console.error('Could not fetch files:', error);
         } finally {
-            setLoading(false);
+            setIsFilesLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchFiles();
-    }, []);
+        if (!authLoading && user) {
+            fetchFiles();
+        }
+    }, [authLoading, user]);
 
     const handleDownload = async (file) => {
         try {
             const response = await downloadFile(file.id);
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', file.nama_file_asli);
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
         } catch (error) {
+            console.error('Download error:', error.response ? error.response.data : error.message);
             setNotification({ isOpen: true, message: 'Gagal mengunduh file.', type: 'error' });
         }
     };
@@ -125,20 +134,36 @@ const DivisionUserDashboard = () => {
 
     const handleToggleFavorite = async (file) => {
         try {
-            setFiles(currentFiles =>
-                currentFiles.map(f =>
-                    f.id === file.id ? { ...f, is_favorited: !f.is_favorited } : f
-                )
-            );
             await toggleFavorite(file.id);
-        } catch (error) {
-            setNotification({ isOpen: true, message: 'Gagal mengubah status favorit.', type: 'error' });
             setFiles(currentFiles =>
                 currentFiles.map(f =>
                     f.id === file.id ? { ...f, is_favorited: !f.is_favorited } : f
                 )
             );
+        } catch (error) {
+            console.error('Favorite toggle error:', error.response ? error.response.data : error.message);
+            setNotification({ isOpen: true, message: 'Gagal mengubah status favorit.', type: 'error' });
         }
+    };
+    
+    const handlePreview = async (file) => {
+        try {
+            const response = await downloadFile(file.id);
+            const fileUrl = window.URL.createObjectURL(new Blob([response.data], { type: file.tipe_file }));
+            setPreviewFile({ url: fileUrl, mime: file.tipe_file, name: file.nama_file_asli });
+            setIsPreviewOpen(true);
+        } catch (error) {
+            console.error('Preview error:', error.response ? error.response.data : error.message);
+            setNotification({ isOpen: true, message: 'Gagal memuat pratinjau.', type: 'error' });
+        }
+    };
+
+    const closePreview = () => {
+        if (previewFile && previewFile.url) {
+            window.URL.revokeObjectURL(previewFile.url);
+        }
+        setIsPreviewOpen(false);
+        setPreviewFile(null);
     };
 
     const confirmDelete = async () => {
@@ -146,19 +171,45 @@ const DivisionUserDashboard = () => {
         try {
             await deleteFile(fileToDelete.id);
             setNotification({ isOpen: true, message: 'File berhasil dipindahkan ke sampah.', type: 'success' });
+            fetchFiles();
         } catch (error) {
+            console.error('Delete error:', error.response ? error.response.data : error.message);
             setNotification({ isOpen: true, message: 'Gagal menghapus file.', type: 'error' });
         } finally {
             setIsDeleteModalOpen(false);
             setFileToDelete(null);
-            fetchFiles();
         }
     };
     
-    const handleUploadSuccess = () => {
+    const handleUploadComplete = () => {
         setIsUploadModalOpen(false);
         fetchFiles();
         setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
+    };
+
+    const handleConflict = (file) => {
+        setPendingFile(file);
+        setIsUploadModalOpen(false); // Tutup modal upload
+        setOverwriteModalOpen(true); // Buka modal konfirmasi timpa
+    };
+
+    const confirmOverwrite = async () => {
+        if (!pendingFile) return;
+
+        const formData = new FormData();
+        formData.append('file', pendingFile);
+
+        try {
+            await uploadFile(formData, { overwrite: true });
+            setNotification({ isOpen: true, message: 'File berhasil ditimpa!', type: 'success' });
+            fetchFiles();
+        } catch (error) {
+            console.error('Overwrite error:', error.response ? error.response.data : error.message);
+            setNotification({ isOpen: true, message: 'Gagal menimpa file.', type: 'error' });
+        } finally {
+            setOverwriteModalOpen(false);
+            setPendingFile(null);
+        }
     };
 
     const closeNotification = () => {
@@ -169,7 +220,13 @@ const DivisionUserDashboard = () => {
         file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (loading) return <div>Loading files...</div>;
+    if (authLoading) {
+        return <div>Loading user data...</div>;
+    }
+
+    if (isFilesLoading) {
+        return <div>Loading files...</div>;
+    }
 
     return (
         <div className="division-dashboard">
@@ -204,23 +261,26 @@ const DivisionUserDashboard = () => {
                             {filteredFiles.map(file => (
                                 <tr key={file.id}>
                                     <td>
-                                        <button onClick={() => handleToggleFavorite(file)} className="action-button">
+                                        <button onClick={() => handleToggleFavorite(file)} className="action-button" title="Favorite">
                                             {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
                                         </button>
                                     </td>
-                                    <td>{file.nama_file_asli}</td>
+                                    <td>
+                                        {file.nama_file_asli}
+                                    </td>
                                     <td>{file.uploader ? file.uploader.name : '-'}</td>
                                     <td>{new Date(file.updated_at).toLocaleDateString('id-ID')}</td>
                                     <td>{(file.ukuran_file / 1024 / 1024).toFixed(2)} MB</td>
                                     <td>
-                                        <button onClick={() => handleDownload(file)} className="action-button">
+                                        <button onClick={() => handlePreview(file)} className="action-button" title="Preview">
+                                            <FaEye color="#0dcaf0" />
+                                        </button>
+                                        <button onClick={() => handleDownload(file)} className="action-button" title="Download">
                                             <FaDownload color="#0d6efd" />
                                         </button>
-                                        {(user?.role === 'admin_devisi' || (user?.role === 'user_devisi' && user?.id === file.uploader_id)) && (
-                                            <button onClick={() => handleDeleteClick(file)} className="action-button">
-                                                <FaTrash color="#dc3545" />
-                                            </button>
-                                        )}
+                                        <button onClick={() => handleDeleteClick(file)} className="action-button" title="Delete">
+                                            <FaTrash color="#dc3545" />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -230,13 +290,20 @@ const DivisionUserDashboard = () => {
             ) : (
                 <div className="stats-grid">
                     {filteredFiles.map(file => (
-                        <FileCard key={file.id} file={file} />
+                        <FileCard 
+                            key={file.id} 
+                            file={file} 
+                            onPreview={handlePreview} 
+                            onDownload={handleDownload} 
+                            onDelete={handleDeleteClick} 
+                            onToggleFavorite={handleToggleFavorite} 
+                        />
                     ))}
                 </div>
             )}
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onSuccess={handleUploadSuccess} />
+                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} />
             </Modal>
             
             <ConfirmationModal
@@ -246,6 +313,16 @@ const DivisionUserDashboard = () => {
                 message={`Apakah Anda yakin ingin menghapus file "${fileToDelete?.nama_file_asli}"?`}
             />
 
+            <ConfirmationModal
+                isOpen={isOverwriteModalOpen}
+                onClose={() => setOverwriteModalOpen(false)}
+                onConfirm={confirmOverwrite}
+                title="Konfirmasi Timpa File"
+                message={`File dengan nama "${pendingFile?.name}" sudah ada. Apakah Anda yakin ingin menggantinya?`}
+                confirmText="Timpa File"
+                cancelText="Batal"
+            />
+
             {notification.isOpen && (
                 <Notification 
                     message={notification.message}
@@ -253,6 +330,14 @@ const DivisionUserDashboard = () => {
                     onClose={closeNotification} 
                 />
             )}
+
+           <FilePreviewModal
+                isOpen={isPreviewOpen}
+                onClose={closePreview}
+                fileUrl={previewFile?.url}
+                mimeType={previewFile?.mime}
+                fileName={previewFile?.name}
+            />
         </div>
     );
 };
@@ -260,7 +345,8 @@ const DivisionUserDashboard = () => {
 // --- Komponen Utama DashboardPage ---
 const DashboardPage = () => {
     const { user } = useAuth();
-    if (user?.role === 'super_admin') {
+    // Perbaikan: Periksa user.role.name, bukan user.role
+    if (user?.role?.name === 'super_admin') {
         return <SuperAdminDashboard />;
     } else {
         return <DivisionUserDashboard />;

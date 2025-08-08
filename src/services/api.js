@@ -50,7 +50,15 @@ export const getDivisions = () => apiClient.get('/admin/divisions');
 
 // File Management
 export const getFiles = () => apiClient.get('/files');
-export const uploadFile = (formData) => apiClient.post('/files', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const uploadFile = (formData, options = {}) => {
+    const { overwrite = false } = options;
+    if (overwrite) {
+        formData.append('overwrite', 'true');
+    }
+    return apiClient.post('/files', formData, { 
+        headers: { 'Content-Type': 'multipart/form-data' } 
+    });
+};
 export const downloadFile = (fileId) => apiClient.get(`/files/${fileId}`, { responseType: 'blob' });
 export const deleteFile = (fileId) => apiClient.delete(`/files/${fileId}`); // Soft delete
 

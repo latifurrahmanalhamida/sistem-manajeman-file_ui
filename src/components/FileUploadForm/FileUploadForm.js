@@ -4,18 +4,17 @@ import React, { useState, useRef } from 'react';
 import { uploadFile } from '../../services/api';
 import './FileUploadForm.css';
 import { FaUpload } from 'react-icons/fa';
-import Notification from '../Notification/Notification'; // Impor komponen notifikasi
+import Notification from '../Notification/Notification';
 
-const FileUploadForm = ({ onSuccess }) => {
+const FileUploadForm = ({ onUploadComplete, onConflict }) => {
     const [file, setFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
     
-    // State untuk notifikasi
     const [notification, setNotification] = useState({
         isOpen: false,
         message: '',
-        type: '' // 'success' atau 'error'
+        type: ''
     });
 
     const handleFileChange = (e) => {
@@ -37,20 +36,23 @@ const FileUploadForm = ({ onSuccess }) => {
             await uploadFile(formData);
             setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
         } catch (err) {
-            setNotification({ isOpen: true, message: 'Gagal mengunggah file. Silakan coba lagi.', type: 'error' });
-            console.error(err);
+            if (err.response && err.response.status === 409) {
+                // File sudah ada, panggil onConflict dengan file yang bersangkutan
+                onConflict(file);
+            } else {
+                setNotification({ isOpen: true, message: 'Gagal mengunggah file. Silakan coba lagi.', type: 'error' });
+                console.error(err);
+            }
         }
     };
     
     const closeNotification = () => {
-        // Jika notifikasi adalah sukses, panggil onSuccess untuk menutup modal utama
         if (notification.type === 'success') {
-            onSuccess();
+            onUploadComplete();
         }
         setNotification({ isOpen: false, message: '', type: '' });
     };
 
-    // Fungsi untuk drag & drop
     const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
     const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
     const handleDrop = (e) => {
@@ -93,7 +95,6 @@ const FileUploadForm = ({ onSuccess }) => {
                 </form>
             </div>
             
-            {/* Tampilkan notifikasi jika isOpen adalah true */}
             {notification.isOpen && (
                 <Notification 
                     message={notification.message}

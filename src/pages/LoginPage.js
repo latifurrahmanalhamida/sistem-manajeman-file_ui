@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css'; // <-- 1. Impor file CSS
 
+
 const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
