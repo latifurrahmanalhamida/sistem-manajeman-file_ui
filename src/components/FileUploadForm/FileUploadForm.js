@@ -37,8 +37,8 @@ const FileUploadForm = ({ onUploadComplete, onConflict }) => {
             setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
         } catch (err) {
             if (err.response && err.response.status === 409) {
-                // File sudah ada, panggil onConflict dengan file yang bersangkutan
-                onConflict(file);
+                // File sudah ada, panggil onConflict dengan file dan pesan error
+                onConflict(file, err.response.data.message);
             } else {
                 setNotification({ isOpen: true, message: 'Gagal mengunggah file. Silakan coba lagi.', type: 'error' });
                 console.error(err);

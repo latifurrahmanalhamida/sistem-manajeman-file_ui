@@ -51,9 +51,12 @@ export const getDivisions = () => apiClient.get('/admin/divisions');
 // File Management
 export const getFiles = () => apiClient.get('/files');
 export const uploadFile = (formData, options = {}) => {
-    const { overwrite = false } = options;
+    const { overwrite = false, newName = null } = options;
     if (overwrite) {
         formData.append('overwrite', 'true');
+    }
+    if (newName) {
+        formData.append('new_name', newName);
     }
     return apiClient.post('/files', formData, { 
         headers: { 'Content-Type': 'multipart/form-data' } 
@@ -67,7 +70,11 @@ export const getRecentFiles = () => apiClient.get('/files/recent');
 export const getFavorites = () => apiClient.get('/files/favorites');
 export const getTrashedFiles = () => apiClient.get('/files/trashed');
 export const toggleFavorite = (fileId) => apiClient.post(`/files/${fileId}/favorite`);
-export const restoreFile = (fileId) => apiClient.post(`/files/${fileId}/restore`);
+export const restoreFile = (fileId, options = {}) => {
+    const { overwrite = false, newName = null } = options;
+    const data = { overwrite, new_name: newName };
+    return apiClient.post(`/files/${fileId}/restore`, data);
+};
 export const forceDeleteFile = (fileId) => apiClient.delete(`/files/${fileId}/force`);
 
 export default apiClient;

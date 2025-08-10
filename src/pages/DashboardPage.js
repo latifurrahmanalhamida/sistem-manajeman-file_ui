@@ -9,7 +9,7 @@ import FileUploadForm from '../components/FileUploadForm/FileUploadForm';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
 import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
-import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye } from 'react-icons/fa';
+import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave } from 'react-icons/fa';
 import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
 
 // --- Komponen Dashboard untuk Super Admin ---
@@ -75,6 +75,7 @@ const SuperAdminDashboard = () => {
     );
 };
 
+
 // --- Komponen Dashboard untuk Admin/User Devisi ---
 const DivisionUserDashboard = () => {
     const { user, searchQuery, loading: authLoading } = useAuth();
@@ -88,9 +89,10 @@ const DivisionUserDashboard = () => {
     const [previewFile, setPreviewFile] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-    // State untuk overwrite
-    const [isOverwriteModalOpen, setOverwriteModalOpen] = useState(false);
-    const [pendingFile, setPendingFile] = useState(null);
+    // State untuk modal overwrite dan rename
+    const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
+    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null });
+    const [newName, setNewName] = useState('');
 
     const fetchFiles = async () => {
         setIsFilesLoading(true);
@@ -171,7 +173,7 @@ const DivisionUserDashboard = () => {
         try {
             await deleteFile(fileToDelete.id);
             setNotification({ isOpen: true, message: 'File berhasil dipindahkan ke sampah.', type: 'success' });
-            fetchFiles();
+            fetchFiles(); // Refresh list file
         } catch (error) {
             console.error('Delete error:', error.response ? error.response.data : error.message);
             setNotification({ isOpen: true, message: 'Gagal menghapus file.', type: 'error' });
@@ -187,29 +189,59 @@ const DivisionUserDashboard = () => {
         setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
     };
 
-    const handleConflict = (file) => {
-        setPendingFile(file);
+    const handleConflict = (file, message) => {
+        setNewName(file.name);
+        setOverwriteModal({ isOpen: true, file: file, message: message });
         setIsUploadModalOpen(false); // Tutup modal upload
-        setOverwriteModalOpen(true); // Buka modal konfirmasi timpa
     };
 
-    const confirmOverwrite = async () => {
-        if (!pendingFile) return;
+    const handleRename = () => {
+        setOverwriteModal({ isOpen: false, file: null, message: '' });
+        setRenameModal({ isOpen: true, file: overwriteModal.file });
+    };
 
+    const executeUpload = async (file, options = {}) => {
         const formData = new FormData();
-        formData.append('file', pendingFile);
+        formData.append('file', file);
+        if (options.newName) {
+            formData.append('new_name', options.newName);
+        }
+        if (options.overwrite) {
+            formData.append('overwrite', true);
+        }
 
         try {
-            await uploadFile(formData, { overwrite: true });
-            setNotification({ isOpen: true, message: 'File berhasil ditimpa!', type: 'success' });
+            await uploadFile(formData, options);
+            const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
+            setNotification({ isOpen: true, message: successMessage, type: 'success' });
             fetchFiles();
-        } catch (error) {
-            console.error('Overwrite error:', error.response ? error.response.data : error.message);
-            setNotification({ isOpen: true, message: 'Gagal menimpa file.', type: 'error' });
+        } catch (err) {
+            if (err.response && err.response.status === 409) {
+                handleConflict(file, err.response.data.message);
+            } else {
+                console.error('Upload error:', err.response ? err.response.data : err.message);
+                setNotification({ isOpen: true, message: 'Gagal mengunggah file.', type: 'error' });
+            }
         } finally {
-            setOverwriteModalOpen(false);
-            setPendingFile(null);
+            setOverwriteModal({ isOpen: false, file: null, message: '' });
+            setRenameModal({ isOpen: false, file: null });
         }
+    };
+
+    const confirmOverwrite = () => {
+        executeUpload(overwriteModal.file, { overwrite: true });
+    };
+
+    const confirmRename = () => {
+        if (!newName.trim()) {
+            setNotification({ isOpen: true, message: 'Nama file tidak boleh kosong.', type: 'error' });
+            return;
+        }
+        if (newName.trim() === renameModal.file.name) {
+            setNotification({ isOpen: true, message: 'Nama file masih sama, silahkan diubah kembali.', type: 'error' });
+            return;
+        }
+        executeUpload(renameModal.file, { newName: newName });
     };
 
     const closeNotification = () => {
@@ -220,13 +252,8 @@ const DivisionUserDashboard = () => {
         file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (authLoading) {
-        return <div>Loading user data...</div>;
-    }
-
-    if (isFilesLoading) {
-        return <div>Loading files...</div>;
-    }
+    if (authLoading) return <div>Loading user data...</div>;
+    if (isFilesLoading) return <div>Loading files...</div>;
 
     return (
         <div className="division-dashboard">
@@ -265,9 +292,7 @@ const DivisionUserDashboard = () => {
                                             {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
                                         </button>
                                     </td>
-                                    <td>
-                                        {file.nama_file_asli}
-                                    </td>
+                                    <td>{file.nama_file_asli}</td>
                                     <td>{file.uploader ? file.uploader.name : '-'}</td>
                                     <td>{new Date(file.updated_at).toLocaleDateString('id-ID')}</td>
                                     <td>{(file.ukuran_file / 1024 / 1024).toFixed(2)} MB</td>
@@ -311,17 +336,47 @@ const DivisionUserDashboard = () => {
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
                 message={`Apakah Anda yakin ingin menghapus file "${fileToDelete?.nama_file_asli}"?`}
+                isDanger={true}
+                confirmText="Hapus"
             />
 
             <ConfirmationModal
-                isOpen={isOverwriteModalOpen}
-                onClose={() => setOverwriteModalOpen(false)}
+                isOpen={overwriteModal.isOpen}
+                onClose={() => setOverwriteModal({ isOpen: false, file: null, message: '' })}
                 onConfirm={confirmOverwrite}
-                title="Konfirmasi Timpa File"
-                message={`File dengan nama "${pendingFile?.name}" sudah ada. Apakah Anda yakin ingin menggantinya?`}
-                confirmText="Timpa File"
-                cancelText="Batal"
+                message={overwriteModal.message || `File dengan nama "${overwriteModal.file?.name}" sudah ada. Timpa file?`}
+                confirmText="Timpa"
+                isDanger={true}
+                customActions={
+                    <button onClick={handleRename} className="modal-button cancel-button">
+                        Ganti Nama
+                    </button>
+                }
             />
+
+            <Modal 
+                isOpen={renameModal.isOpen} 
+                onClose={() => setRenameModal({ isOpen: false, file: null })} 
+                title="Ganti Nama & Unggah"
+            >
+                <div>
+                    <p>Masukkan nama file baru:</p>
+                    <input 
+                        type="text" 
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="form-input w-full mt-2"
+                    />
+                    <div className="confirmation-modal-actions">
+                        <button type="button" className="modal-button cancel-button" onClick={() => setRenameModal({ isOpen: false, file: null })}>
+                            <FaTimes /> Batal
+                        </button>
+                        <button type="button" className="modal-button confirm-button" onClick={confirmRename}>
+                            <FaSave /> Simpan dengan Nama Baru
+                        </button>
+                    </div>
+                </div>
+            </Modal>
 
             {notification.isOpen && (
                 <Notification 
@@ -342,10 +397,10 @@ const DivisionUserDashboard = () => {
     );
 };
 
+
 // --- Komponen Utama DashboardPage ---
 const DashboardPage = () => {
     const { user } = useAuth();
-    // Perbaikan: Periksa user.role.name, bukan user.role
     if (user?.role?.name === 'super_admin') {
         return <SuperAdminDashboard />;
     } else {
