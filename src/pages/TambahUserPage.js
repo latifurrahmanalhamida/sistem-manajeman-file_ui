@@ -1,148 +1,83 @@
 // src/pages/TambahUserPage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { createUser, getRoles, getDivisions } from '../services/api';
-import './TambahUserPage.css';
+import { createUser } from '../services/api'; 
+import './AdminPanel.css';
+import Notification from '../components/Notification/Notification';
 
 const TambahUserPage = () => {
-    const { user: adminUser } = useAuth(); // Ambil data admin yang login
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        nipp: '',
+        username: ''
+    });
+    const [notification, setNotification] = useState({ isOpen: false, message: '', type: '' });
 
-    // State untuk form
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [roleId, setRoleId] = useState('');
-    const [divisionId, setDivisionId] = useState('');
-
-    // State untuk data dropdown
-    const [roles, setRoles] = useState([]);
-    const [divisions, setDivisions] = useState([]);
-
-    // State untuk UI feedback
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-
-    // Ambil data roles dan divisions saat halaman dimuat
-    useEffect(() => {
-        if (adminUser?.role === 'super_admin') {
-            const fetchDataForDropdowns = async () => {
-                try {
-                    const rolesRes = await getRoles();
-                    const divisionsRes = await getDivisions();
-                    setRoles(rolesRes.data);
-                    setDivisions(divisionsRes.data);
-                } catch (err) {
-                    setError('Gagal memuat data peran dan divisi.');
-                }
-            };
-            fetchDataForDropdowns();
-        }
-    }, [adminUser]);
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
-
-        let userData = { name, email, password };
-
-        // Jika admin adalah Super Admin, sertakan role dan divisi
-        if (adminUser?.role === 'super_admin') {
-            userData.role_id = roleId;
-            userData.division_id = divisionId;
-        }
-
         try {
-            await createUser(userData);
-            setSuccess('User baru berhasil dibuat! Mengarahkan ke daftar user...');
-
+            await createUser(formData);
+            // Tampilkan notifikasi sukses
+            setNotification({ isOpen: true, message: 'User berhasil dibuat!', type: 'success' });
+            // Arahkan kembali setelah beberapa saat
             setTimeout(() => {
-                navigate('/admin/daftar-user');
+                navigate('/panel-admin/users');
             }, 2000);
-
-        } catch (err) {
-            if (err.response && err.response.data.errors) {
-                const validationErrors = Object.values(err.response.data.errors).flat().join('\n');
-                setError(validationErrors);
-            } else {
-                setError('Gagal membuat user baru. Silakan coba lagi.');
-            }
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || 'Gagal membuat user. Periksa kembali data Anda.';
+            setNotification({ isOpen: true, message: errorMsg, type: 'error' });
+            console.error(error);
         }
     };
 
-    return (
-        <div className="dashboard-container">
-            <div className="dashboard-header">
-                <h1>Tambah User Baru</h1>
-            </div>
+    const closeNotification = () => {
+        setNotification({ isOpen: false, message: '', type: '' });
+    };
 
+    return (
+        <div className="admin-page-container">
+            <h3>Buat User Baru</h3>
             <div className="form-container">
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Nama:</label>
-                        <input
-                            className="form-input"
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
+                        <label>NIPP</label>
+                        <input name="nipp" value={formData.nipp} onChange={handleChange} className="form-input" />
                     </div>
                     <div className="form-group">
-                        <label>Email:</label>
-                        <input
-                            className="form-input"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                        <label>Nama Lengkap</label>
+                        <input name="name" value={formData.name} onChange={handleChange} className="form-input" required />
                     </div>
                     <div className="form-group">
-                        <label>Password:</label>
-                        <input
-                            className="form-input"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            minLength="8"
-                        />
+                        <label>Username</label>
+                        <input name="username" value={formData.username} onChange={handleChange} className="form-input" />
                     </div>
-
-                    {/* Dropdown hanya muncul untuk Super Admin */}
-                    {adminUser?.role === 'super_admin' && (
-                        <>
-                            <div className="form-group">
-                                <label>Peran (Role):</label>
-                                <select className="form-input" value={roleId} onChange={(e) => setRoleId(e.target.value)} required>
-                                    <option value="">Pilih Peran</option>
-                                    {roles.map(role => (
-                                        <option key={role.id} value={role.id}>{role.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Divisi:</label>
-                                <select className="form-input" value={divisionId} onChange={(e) => setDivisionId(e.target.value)} required>
-                                    <option value="">Pilih Divisi</option>
-                                    {divisions.map(division => (
-                                        <option key={division.id} value={division.id}>{division.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </>
-                    )}
-
-                    <button type="submit" className="form-button">Simpan User</button>
-
-                    {error && <p className="form-message error">{error}</p>}
-                    {success && <p className="form-message success">{success}</p>}
+                    <div className="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-input" required />
+                    </div>
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" value={formData.password} onChange={handleChange} className="form-input" required minLength="8" />
+                    </div>
+                    <button type="submit" className="form-button">Simpan</button>
                 </form>
             </div>
+            
+            {notification.isOpen && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={closeNotification}
+                />
+            )}
         </div>
     );
 };

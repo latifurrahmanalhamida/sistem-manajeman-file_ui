@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import apiClient, { getFiles, downloadFile, deleteFile, toggleFavorite } from '../services/api';
+import apiClient, { getFiles, downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
 import './DashboardView.css';
 
 // Impor komponen
@@ -9,8 +9,10 @@ import FileUploadForm from '../components/FileUploadForm/FileUploadForm';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
 import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
-import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye } from 'react-icons/fa';
-import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
+
+
+import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave } from 'react-icons/fa';
+
 
 // --- Komponen Dashboard untuk Super Admin ---
 const SuperAdminDashboard = () => {
@@ -75,11 +77,12 @@ const SuperAdminDashboard = () => {
     );
 };
 
+
 // --- Komponen Dashboard untuk Admin/User Devisi ---
 const DivisionUserDashboard = () => {
-    const { user, searchQuery, loading: authLoading } = useAuth(); // Mengambil loading state dari AuthContext
+    const { user, searchQuery, loading: authLoading } = useAuth();
     const [files, setFiles] = useState([]);
-    const [isFilesLoading, setIsFilesLoading] = useState(true); // State loading khusus untuk file
+    const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
@@ -87,6 +90,11 @@ const DivisionUserDashboard = () => {
     const [viewMode, setViewMode] = useState('list');
     const [previewFile, setPreviewFile] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+    // State untuk modal overwrite dan rename
+    const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
+    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null });
+    const [newName, setNewName] = useState('');
 
     const fetchFiles = async () => {
         setIsFilesLoading(true);
@@ -101,7 +109,6 @@ const DivisionUserDashboard = () => {
     };
 
     useEffect(() => {
-        // Hanya fetch files jika proses otentikasi sudah selesai dan user ada
         if (!authLoading && user) {
             fetchFiles();
         }
@@ -120,7 +127,7 @@ const DivisionUserDashboard = () => {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Download error:', error.response ? error.response.data : error.message);
-            setNotification({ isOpen: true, message: 'Gagal mengunduh file. Lihat konsol untuk detail.', type: 'error' });
+            setNotification({ isOpen: true, message: 'Gagal mengunduh file.', type: 'error' });
         }
     };
 
@@ -151,7 +158,7 @@ const DivisionUserDashboard = () => {
             setIsPreviewOpen(true);
         } catch (error) {
             console.error('Preview error:', error.response ? error.response.data : error.message);
-            setNotification({ isOpen: true, message: 'Gagal memuat pratinjau. Lihat konsol untuk detail.', type: 'error' });
+            setNotification({ isOpen: true, message: 'Gagal memuat pratinjau.', type: 'error' });
         }
     };
 
@@ -167,8 +174,8 @@ const DivisionUserDashboard = () => {
         if (!fileToDelete) return;
         try {
             await deleteFile(fileToDelete.id);
-            setNotification({ isOpen: true, message: 'File berhasil dihapus.', type: 'success' });
-            fetchFiles();
+            setNotification({ isOpen: true, message: 'File berhasil dipindahkan ke sampah.', type: 'success' });
+            fetchFiles(); // Refresh list file
         } catch (error) {
             console.error('Delete error:', error.response ? error.response.data : error.message);
             setNotification({ isOpen: true, message: 'Gagal menghapus file.', type: 'error' });
@@ -178,10 +185,65 @@ const DivisionUserDashboard = () => {
         }
     };
     
-    const handleUploadSuccess = () => {
+    const handleUploadComplete = () => {
         setIsUploadModalOpen(false);
         fetchFiles();
         setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
+    };
+
+    const handleConflict = (file, message) => {
+        setNewName(file.name);
+        setOverwriteModal({ isOpen: true, file: file, message: message });
+        setIsUploadModalOpen(false); // Tutup modal upload
+    };
+
+    const handleRename = () => {
+        setOverwriteModal({ isOpen: false, file: null, message: '' });
+        setRenameModal({ isOpen: true, file: overwriteModal.file });
+    };
+
+    const executeUpload = async (file, options = {}) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (options.newName) {
+            formData.append('new_name', options.newName);
+        }
+        if (options.overwrite) {
+            formData.append('overwrite', true);
+        }
+
+        try {
+            await uploadFile(formData, options);
+            const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
+            setNotification({ isOpen: true, message: successMessage, type: 'success' });
+            fetchFiles();
+        } catch (err) {
+            if (err.response && err.response.status === 409) {
+                handleConflict(file, err.response.data.message);
+            } else {
+                console.error('Upload error:', err.response ? err.response.data : err.message);
+                setNotification({ isOpen: true, message: 'Gagal mengunggah file.', type: 'error' });
+            }
+        } finally {
+            setOverwriteModal({ isOpen: false, file: null, message: '' });
+            setRenameModal({ isOpen: false, file: null });
+        }
+    };
+
+    const confirmOverwrite = () => {
+        executeUpload(overwriteModal.file, { overwrite: true });
+    };
+
+    const confirmRename = () => {
+        if (!newName.trim()) {
+            setNotification({ isOpen: true, message: 'Nama file tidak boleh kosong.', type: 'error' });
+            return;
+        }
+        if (newName.trim() === renameModal.file.name) {
+            setNotification({ isOpen: true, message: 'Nama file masih sama, silahkan diubah kembali.', type: 'error' });
+            return;
+        }
+        executeUpload(renameModal.file, { newName: newName });
     };
 
     const closeNotification = () => {
@@ -192,15 +254,8 @@ const DivisionUserDashboard = () => {
         file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Jika otentikasi masih berjalan, tampilkan pesan loading
-    if (authLoading) {
-        return <div>Loading user data...</div>;
-    }
-
-    // Jika file sedang dimuat, tampilkan pesan loading
-    if (isFilesLoading) {
-        return <div>Loading files...</div>;
-    }
+    if (authLoading) return <div>Loading user data...</div>;
+    if (isFilesLoading) return <div>Loading files...</div>;
 
     return (
         <div className="division-dashboard">
@@ -252,19 +307,9 @@ const DivisionUserDashboard = () => {
                                         <button onClick={() => handleDownload(file)} className="action-button" title="Download">
                                             <FaDownload color="#0d6efd" />
                                         </button>
-                                       {/* {(user?.role?.name === 'super_admin' || user?.role?.name === 'admin_devisi' ||
-                                (user?.role?.name === 'user_devisi' && user?.id === file.uploader_id)) ? (
-                                    <>
-                                    {console.log("Tombol delete akan muncul untuk", file.nama_file_asli)} */}
-                                    <button onClick={() => handleDeleteClick(file)} className="action-button" title="Delete">
-                                        <FaTrash color="#dc3545" />
-                                    </button>
-                                    {/* </>
-                                ) : (
-                                    <>
-                                    {console.log("Tombol delete TIDAK tampil untuk", file.nama_file_asli)}
-                                    </>
-                                )} */}
+                                        <button onClick={() => handleDeleteClick(file)} className="action-button" title="Delete">
+                                            <FaTrash color="#dc3545" />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -287,7 +332,7 @@ const DivisionUserDashboard = () => {
             )}
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onSuccess={handleUploadSuccess} />
+                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} />
             </Modal>
             
             <ConfirmationModal
@@ -295,7 +340,47 @@ const DivisionUserDashboard = () => {
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
                 message={`Apakah Anda yakin ingin menghapus file "${fileToDelete?.nama_file_asli}"?`}
+                isDanger={true}
+                confirmText="Hapus"
             />
+
+            <ConfirmationModal
+                isOpen={overwriteModal.isOpen}
+                onClose={() => setOverwriteModal({ isOpen: false, file: null, message: '' })}
+                onConfirm={confirmOverwrite}
+                message={overwriteModal.message || `File dengan nama "${overwriteModal.file?.name}" sudah ada. Timpa file?`}
+                confirmText="Timpa"
+                isDanger={true}
+                customActions={
+                    <button onClick={handleRename} className="modal-button cancel-button">
+                        Ganti Nama
+                    </button>
+                }
+            />
+
+            <Modal 
+                isOpen={renameModal.isOpen} 
+                onClose={() => setRenameModal({ isOpen: false, file: null })} 
+                title="Ganti Nama & Unggah"
+            >
+                <div>
+                    <p>Masukkan nama file baru:</p>
+                    <input 
+                        type="text" 
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="form-input w-full mt-2"
+                    />
+                    <div className="confirmation-modal-actions">
+                        <button type="button" className="modal-button cancel-button" onClick={() => setRenameModal({ isOpen: false, file: null })}>
+                            <FaTimes /> Batal
+                        </button>
+                        <button type="button" className="modal-button confirm-button" onClick={confirmRename}>
+                            <FaSave /> Simpan dengan Nama Baru
+                        </button>
+                    </div>
+                </div>
+            </Modal>
 
             {notification.isOpen && (
                 <Notification 
@@ -316,10 +401,11 @@ const DivisionUserDashboard = () => {
     );
 };
 
+
 // --- Komponen Utama DashboardPage ---
 const DashboardPage = () => {
     const { user } = useAuth();
-    if (user?.role === 'super_admin') {
+    if (user?.role?.name === 'super_admin') {
         return <SuperAdminDashboard />;
     } else {
         return <DivisionUserDashboard />;
