@@ -9,6 +9,8 @@ import FileUploadForm from '../components/FileUploadForm/FileUploadForm';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
 import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
+import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
+
 
 
 import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave } from 'react-icons/fa';
