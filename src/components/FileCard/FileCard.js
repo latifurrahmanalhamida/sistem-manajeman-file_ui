@@ -4,7 +4,6 @@ import './FileCard.css';
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFileArchive, FaFile, FaDownload, FaTrash, FaStar, FaRegStar } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
-// Fungsi helper untuk memilih ikon berdasarkan tipe file
 const getFileIcon = (fileName) => {
     const extension = fileName.split('.').pop().toLowerCase();
     if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) return <FaFileImage size={40} color="#6c757d" />;
@@ -16,7 +15,14 @@ const getFileIcon = (fileName) => {
 };
 
 const FileCard = ({ file, onPreview, onDownload, onDelete, onToggleFavorite }) => {
+    // Variabel user sekarang digunakan untuk otorisasi
     const { user } = useAuth();
+
+    // Tentukan apakah tombol hapus boleh ditampilkan
+    const canDelete = 
+        user?.role?.name === 'super_admin' || 
+        user?.role?.name === 'admin_devisi' || 
+        user?.id === file.uploader_id;
 
     return (
         <div className="file-card">
@@ -33,11 +39,12 @@ const FileCard = ({ file, onPreview, onDownload, onDelete, onToggleFavorite }) =
                 <button onClick={() => onDownload(file)} className="action-button" title="Download">
                     <FaDownload color="#0d6efd" />
                 </button>
-                {/* {(user?.role?.name === 'super_admin' || user?.role?.name === 'admin_devisi' || (user?.role?.name === 'user_devisi' && user?.id === file.uploader_id)) && ( */}
+                {/* Tombol Hapus hanya muncul jika 'canDelete' bernilai true */}
+                {canDelete && (
                     <button onClick={() => onDelete(file)} className="action-button" title="Delete">
                         <FaTrash color="#dc3545" />
                     </button>
-                {/* )} */}
+                )}
             </div>
         </div>
     );

@@ -1,0 +1,94 @@
+/* Styling untuk Tombol Utama */
+.btn-add-folder {
+    background-color: #4A4EBF; /* Warna biru keunguan */
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: background-color 0.2s;
+}
+
+.btn-add-folder:hover {
+    background-color: #3a3d99;
+}
+
+/* Styling untuk Modal */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.modal-content .form-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-actions .btn-secondary {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.modal-actions .btn-primary {
+    background-color: #4A4EBF;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Styling untuk Tabel */
+.professional-table {
+    width: 100%;
+    border-collapse: collapse; /* Menghilangkan jarak antar border */
+}
+
+.professional-table th, .professional-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee; /* Garis bawah halus di setiap baris */
+}
+
+.professional-table th {
+    font-weight: bold;
+    color: #888;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}

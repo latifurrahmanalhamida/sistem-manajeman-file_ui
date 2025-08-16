@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './LoginPage.css'; // <-- 1. Impor file CSS
-
+import './LoginPage.css';
+import { VscError } from "react-icons/vsc"; 
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
-    const [email, setEmail] = useState('');
+    const [loginInput, setLoginInput] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
@@ -16,19 +16,16 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
         try {
-            await login(email, password);
+            await login(loginInput, password);
             navigate('/dashboard');
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Login gagal. Periksa kembali email dan password Anda.';
+            const errorMessage = err.response?.data?.message || 'Login gagal. Periksa kembali kredensial Anda.';
             setError(errorMessage);
             console.error("Login error details:", err);
         }
     };
 
-    // 2. HAPUS seluruh objek const styles = { ... };
-
     return (
-        // 3. Ganti semua 'style={...}' menjadi 'className="..."'
         <div className="login-page">
             <div className="left-pane">
                 <div className="overlay">
@@ -43,13 +40,13 @@ const LoginPage = () => {
                     <div className="title-underline"></div>
                     <form onSubmit={handleLogin}>
                         <div className="input-group">
-                            <label>Email</label>
+                            <label>Email atau NIPP</label>
                             <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                type="text"
+                                value={loginInput}
+                                onChange={(e) => setLoginInput(e.target.value)}
                                 required
-                                placeholder="contoh@kai.id"
+                                placeholder="masukan email atau nipp yang sudah terdaftar"
                             />
                         </div>
                         <div className="input-group">
@@ -62,7 +59,14 @@ const LoginPage = () => {
                                 placeholder="••••••••"
                             />
                         </div>
-                        {error && <p className="error-message">{error}</p>}
+
+                        {error && (
+                            <div className="error-message">
+                                <VscError size={20} />
+                                <span>{error}</span>
+                            </div>
+                        )}
+                        
                         <button type="submit" className="login-button">Masuk</button>
                     </form>
                 </div>

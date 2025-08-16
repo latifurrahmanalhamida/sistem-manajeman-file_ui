@@ -1,9 +1,7 @@
 // src/context/AuthContext.js
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-// Impor fungsi spesifik yang sudah kita buat
 import { loginUser, logoutUser, getUser } from '../services/api';
-// Impor apiClient untuk mengatur header default
 import apiClient from '../services/api';
 
 const AuthContext = createContext(null);
@@ -12,23 +10,18 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('authToken'));
     const [loading, setLoading] = useState(true);
-    // 1. Tambahkan state untuk search query
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        // Fungsi ini berjalan saat aplikasi pertama kali dimuat
         const bootstrapAuth = async () => {
             const storedToken = localStorage.getItem('authToken');
             if (storedToken) {
                 setToken(storedToken);
-                // Set header default untuk semua permintaan apiClient
                 apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
                 try {
-                    // Coba ambil data user dengan token yang ada
                     const response = await getUser();
                     setUser(response.data);
                 } catch (error) {
-                    // Jika token tidak valid, hapus
                     localStorage.removeItem('authToken');
                     setToken(null);
                     setUser(null);
@@ -36,28 +29,34 @@ export const AuthProvider = ({ children }) => {
             }
             setLoading(false);
         };
-
         bootstrapAuth();
     }, []);
 
-    const login = async (email, password) => {
+    // ===== PERUBAHAN ADA DI SINI =====
+    const login = async (loginInput, password) => { 
         try {
-            const response = await loginUser({ email, password });
+            // Mengirim data ke backend dengan kunci 'login' agar sesuai dengan AuthController
+            const response = await loginUser({ 
+                login: loginInput, 
+                password: password 
+            });
+            
             const { access_token, user: userData } = response.data;
 
-            // Simpan token dan user di localStorage
             localStorage.setItem('authToken', access_token);
             localStorage.setItem('user', JSON.stringify(userData));
 
-            // Perbarui state di aplikasi
             setToken(access_token);
             setUser(userData);
+            
+            // Set header default untuk permintaan selanjutnya setelah login berhasil
+            apiClient.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
 
         } catch (error) {
-            // Jika login gagal, lempar kembali error agar bisa ditangkap oleh LoginPage
             throw error;
         }
     };
+    // ===== AKHIR PERUBAHAN =====
 
     const logout = async () => {
         try {
@@ -65,7 +64,6 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Logout API call failed, proceeding with local logout.", error);
         } finally {
-            // Hapus semua data dari state dan localStorage
             setUser(null);
             setToken(null);
             localStorage.removeItem('authToken');
@@ -74,7 +72,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // 2. Tambahkan searchQuery dan setSearchQuery ke dalam value
     const value = { user, token, loading, login, logout, searchQuery, setSearchQuery };
 
     return (
@@ -84,7 +81,6 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// Custom hook untuk menggunakan context
 export const useAuth = () => {
     return useContext(AuthContext);
 };

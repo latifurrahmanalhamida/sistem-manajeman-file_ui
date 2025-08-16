@@ -130,3 +130,19 @@
     margin-bottom: 20px;
     font-size: 0.9rem;
 }
+/* Ganti style .error-message yang lama dengan ini */
+.error-message {
+    background-color: #f8d7da; /* Warna latar merah muda */
+    color: #721c24;             /* Warna teks merah tua */
+    border: 1px solid #f5c6cb;  /* Warna border merah muda */
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    display: flex; /* Untuk ikon (opsional) */
+    align-items: center; /* Untuk ikon (opsional) */
+    justify-content: center; /* Untuk ikon (opsional) */
+    gap: 8px; /* Jarak antara ikon dan teks (opsional) */
+}
