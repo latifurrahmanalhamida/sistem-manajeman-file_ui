@@ -28,8 +28,9 @@ const FavoritesPage = () => {
                         {files.map(file => (
                             <tr key={file.id}>
                                 <td>{file.nama_file_asli}</td>
-                                <td>{file.uploader.name}</td>
-                                <td>{file.division.name}</td>
+                                {/* PERBAIKAN: Gunakan optional chaining (?.) dan nullish coalescing (??) */}
+                                <td>{file.uploader?.name ?? 'User Dihapus'}</td>
+                                <td>{file.division?.name ?? 'Tidak Ada Divisi'}</td>
                             </tr>
                         ))}
                     </tbody>

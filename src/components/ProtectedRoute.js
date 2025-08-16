@@ -1,32 +1,36 @@
 // src/components/ProtectedRoute.js
 
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children }) => {
-    const { user, loading, getUser } = useAuth();
-    
-    useEffect(() => {
-        // PERUBAHAN UTAMA DI SINI:
-        // Cek pengguna HANYA JIKA aplikasi dalam status loading awal
-        // dan belum ada data user.
-        if (loading) {
-            getUser();
-        }
-    }, [loading, getUser]); // Hapus 'user' dari dependency array
+const ProtectedRoute = ({ children, allowedRoles }) => {
+    const { user, loading } = useAuth();
+    const location = useLocation();
 
-    // Saat masih loading awal, tampilkan pesan
     if (loading) {
-        return <div>Loading application...</div>;
+        return <div>Loading...</div>;
     }
 
-    // Jika sudah tidak loading dan user tetap tidak ada, arahkan ke login
     if (!user) {
-        return <Navigate to="/login" />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // Jika user ada, tampilkan halaman yang diminta
+    // --- TAMBAHKAN KODE DEBUGGING DI SINI ---
+    console.log("=================================");
+    console.log("DEBUGGING DI PROTECTED ROUTE");
+    console.log("Rute saat ini:", location.pathname);
+    console.log("Peran yang diizinkan (allowedRoles):", allowedRoles);
+    console.log("Objek user lengkap:", user);
+    console.log("Peran user saat ini (user.role?.name):", user?.role?.name);
+    console.log("Apakah akses akan ditolak?", allowedRoles && !allowedRoles.includes(user?.role?.name));
+    console.log("=================================");
+    // --- AKHIR KODE DEBUGGING ---
+
+    if (allowedRoles && !allowedRoles.includes(user.role?.name)) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
     return children;
 };
 

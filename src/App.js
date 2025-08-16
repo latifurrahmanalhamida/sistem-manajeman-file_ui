@@ -4,7 +4,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
-// Impor Komponen & Halaman
+// --- Impor Komponen & Halaman Utama ---
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/Layout/AppLayout';
 import AdminPanelLayout from './components/Layout/AdminPanelLayout';
@@ -19,22 +19,27 @@ import TrashPage from './pages/TrashPage';
 import EditUserPage from './pages/EditUserPage';
 import TrashUserPage from './pages/TrashUserPage';
 
-// Komponen untuk rute Panel Admin
+// --- IMPORT BARU UNTUK SUPER ADMIN ---
+import SuperAdminLayout from './components/Layout/SuperAdminLayout';
+import SuperAdminBeranda from './pages/SuperAdminBeranda';
+// Halaman lain bisa ditambahkan nanti
+// import ManajemenPage from './pages/ManajemenPage'; 
+// import PengaturanPage from './pages/PengaturanPage'; 
+
+// --- Komponen untuk rute Panel Admin Devisi (Tidak berubah) ---
 const AdminPanelRoutes = () => (
     <AdminPanelLayout title="Panel Admin">
         <Routes>
             <Route path="/users" element={<DaftarUserPage />} />
             <Route path="/tambah-user" element={<TambahUserPage />} />
-            {/* Rute EditUserPage dipindahkan ke sini */}
             <Route path="/users/edit/:userId" element={<EditUserPage />} />
-             <Route path="/users/trash" element={<TrashUserPage />} /> 
-            {/* Rute default di dalam panel admin */}
+            <Route path="/users/trash" element={<TrashUserPage />} /> 
             <Route path="*" element={<Navigate to="/panel-admin/users" replace />} />
         </Routes>
     </AdminPanelLayout>
 );
 
-// Komponen untuk rute utama aplikasi
+// --- Komponen untuk rute utama aplikasi (Tidak berubah) ---
 const MainRoutes = () => (
     <AppLayout>
         <Routes>
@@ -43,13 +48,14 @@ const MainRoutes = () => (
             <Route path="/favorit" element={<FavoritesPage />} />
             <Route path="/sampah" element={<TrashPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            {/* Rute EditUserPage sudah dihapus dari sini */}
-            {/* Arahkan rute tak dikenal di layout utama ke dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
     </AppLayout>
 );
 
+// --- Komponen SuperAdminRoutes DIHAPUS KARENA RESTRUKTURISASI ---
+
+// --- Komponen Utama App (Struktur routing diperbarui) ---
 function App() {
     return (
         <AuthProvider>
@@ -57,11 +63,33 @@ function App() {
                 <Routes>
                     {/* Rute publik */}
                     <Route path="/login" element={<LoginPage />} />
-
-                    {/* Rute terproteksi untuk Panel Admin */}
-                    <Route path="/panel-admin/*" element={<ProtectedRoute><AdminPanelRoutes /></ProtectedRoute>} />
+                    
+                    {/* Rute terproteksi untuk Panel Admin Devisi (Tidak berubah) */}
+                    <Route path="/panel-admin/*" element={
+                        <ProtectedRoute allowedRoles={['admin_devisi']}>
+                            <AdminPanelRoutes />
+                        </ProtectedRoute>
+                    } />
+                    
+                    {/* RUTE SUPER ADMIN YANG DIPERBAIKI */}
+                    <Route 
+                        path="/super-admin" // Hapus "/*"
+                        element={
+                            <ProtectedRoute allowedRoles={['super_admin']}>
+                                <SuperAdminLayout />
+                            </ProtectedRoute>
+                        }
+                    >
+                        {/* Rute nested didefinisikan sebagai children di sini */}
+                        <Route index element={<Navigate to="beranda" replace />} />
+                        <Route path="beranda" element={<SuperAdminBeranda />} />
+                        {/* <Route path="manajemen" element={<ManajemenPage />} /> */}
+                        {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
+                        <Route path="*" element={<Navigate to="beranda" replace />} />
+                    </Route>
                     
                     {/* Rute terproteksi untuk semua halaman utama lainnya */}
+                    {/* Pastikan rute ini paling bawah agar tidak menimpa /super-admin */}
                     <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
                 </Routes>
             </Router>

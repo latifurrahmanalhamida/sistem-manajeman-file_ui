@@ -40,10 +40,20 @@ const UserProfileDropdown = () => {
                         <span>Profil Saya</span>
                     </Link>
 
-                    {user && user.role === 'admin_devisi' && (
+                    {/* Memeriksa 'user.role.name' untuk Admin Devisi */}
+                    {user?.role?.name === 'admin_devisi' && (
                         <Link to="/panel-admin" className="dropdown-item">
                             <FaShieldAlt />
                             <span>Panel Admin</span>
+                        </Link>
+                    )}
+                    
+                    {/* Memeriksa 'user.role.name' untuk Super Admin */}
+                    {user?.role?.name === 'super_admin' && (
+                        // PASTIKAN LINK-NYA MENGARAH KE RUTE YANG BENAR
+                        <Link to="/super-admin/beranda" className="dropdown-item">
+                            <FaShieldAlt />
+                            <span>Panel Super Admin</span>
                         </Link>
                     )}
                     

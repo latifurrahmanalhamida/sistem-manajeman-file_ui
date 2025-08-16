@@ -8,7 +8,9 @@ import './AppLayout.css';
 
 const AppLayout = ({ children }) => {
     // 2. Ambil state searchQuery dan setSearchQuery dari context
-    const { searchQuery, setSearchQuery } = useAuth();
+    // const { searchQuery, setSearchQuery } = useAuth();
+    const { user, searchQuery, setSearchQuery } = useAuth();
+    console.log("Data User Saat Ini:", user);
 
     return (
         <div className="app-layout">
