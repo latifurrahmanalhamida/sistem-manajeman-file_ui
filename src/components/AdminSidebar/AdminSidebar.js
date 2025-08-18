@@ -1,35 +1,36 @@
-// src/components/AdminSidebar/AdminSidebar.js
 import React from 'react';
-// Impor 'Link' untuk tombol kembali, dan 'NavLink' untuk menu navigasi
 import { NavLink, Link } from 'react-router-dom';
-import './AdminSidebar.css';
-// Impor ikon baru untuk tombol kembali
+// PERUBAHAN: Impor file CSS yang baru
+import '../Sidebar/Sidebar.css'; 
 import { FaUsers, FaFolder, FaChartLine, FaArrowLeft } from 'react-icons/fa';
 
 const AdminSidebar = () => {
     return (
-        <aside className="admin-sidebar">
-            <div> {/* Div pembungkus untuk menu utama */}
-                <ul className="admin-sidebar-menu">
-                    <li className="menu-item">
-                        <NavLink to="/panel-admin/users" end> <FaUsers /> Kelola User </NavLink>
-                    </li>
-                    <li className="menu-item">
-                        <NavLink to="/panel-admin/folders"> <FaFolder /> Kelola Folder </NavLink>
-                    </li>
-                    <li className="menu-item">
-                        <NavLink to="/panel-admin/activities"> <FaChartLine /> Laporan Aktivitas </NavLink>
-                    </li>
-                </ul>
+        // PERUBAHAN: Ganti className menjadi 'sidebar'
+        <aside className="sidebar">
+            <div>
+                <div className="sidebar-header">
+                    <h3>Panel Admin</h3>
+                </div>
+                {/* PERUBAHAN: Menyamakan struktur dengan NavLink */}
+                <nav className="sidebar-nav">
+                    <NavLink to="/panel-admin/users" className="sidebar-link" end> 
+                        <FaUsers /> Kelola User 
+                    </NavLink>
+                    <NavLink to="/panel-admin/folders" className="sidebar-link"> 
+                        <FaFolder /> Kelola Folder 
+                    </NavLink>
+                    <NavLink to="/panel-admin/activities" className="sidebar-link"> 
+                        <FaChartLine /> Laporan Aktivitas 
+                    </NavLink>
+                </nav>
             </div>
 
-            {/* --- BAGIAN BARU UNTUK TOMBOL KEMBALI --- */}
             <div className="sidebar-footer">
                 <Link to="/dashboard" className="sidebar-back-button">
                     <FaArrowLeft /> Kembali ke Dashboard
                 </Link>
             </div>
-            {/* ------------------------------------------- */}
         </aside>
     );
 };

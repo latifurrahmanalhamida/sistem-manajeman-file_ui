@@ -1,25 +1,32 @@
 // src/pages/SuperAdminBeranda.js
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/api';
+import StatCard from '../components/Dashboard/StatCard';
+import ChartCard from '../components/Dashboard/ChartCard';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import './SuperAdminBeranda.css';
 
-// Anda bisa menggunakan CSS yang sama dengan dashboard lama atau membuat yang baru
-import './DashboardView.css'; 
+// Komponen kecil untuk progress bar di dalam StatCard
+const ProgressBar = ({ percentage }) => (
+    <div className="progress-bar-container">
+        <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
+    </div>
+);
 
 const SuperAdminBeranda = () => {
-    const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                // Endpoint ini akan mengambil data statistik untuk dashboard super admin
                 const response = await apiClient.get('/admin/dashboard-stats');
                 setStats(response.data);
-            } catch (error) {
-                console.error('Could not fetch dashboard data:', error);
+            } catch (err) {
+                setError('Gagal memuat data dashboard. Pastikan backend berjalan.');
+                console.error('Could not fetch dashboard data:', err);
             } finally {
                 setLoading(false);
             }
@@ -27,53 +34,89 @@ const SuperAdminBeranda = () => {
         fetchDashboardData();
     }, []);
 
-    if (loading) {
-        return <div>Loading dashboard data...</div>;
-    }
+    if (loading) return <div>Loading dashboard data...</div>;
+    if (error) return <div className="error-message">{error}</div>;
+    if (!stats) return <div>Tidak ada data untuk ditampilkan.</div>;
 
     return (
-        <div className="dashboard-container">
-            <div className="dashboard-header">
-                {/* Judul disesuaikan dengan nama menu */}
-                <h1>Beranda</h1> 
-                <p>Selamat Datang, <strong>{user?.name}</strong></p>
+        <div className="super-admin-beranda">
+            <h1>Beranda</h1>
+
+            {/* Bagian Kartu Statistik Utama */}
+            <div className="stats-grid">
+                <StatCard title="CPU" value={`${stats.cpu.percentage}%`}>
+                    <ProgressBar percentage={stats.cpu.percentage} />
+                </StatCard>
+                <StatCard title="RAM" value={`${stats.ram.percentage}%`}>
+                    <ProgressBar percentage={stats.ram.percentage} />
+                </StatCard>
+                <StatCard title="DISK" value={`${stats.disk.percentage}%`}>
+                    <ProgressBar percentage={stats.disk.percentage} />
+                </StatCard>
+                <StatCard title="Penyimpanan File" value={stats.storageUsed} />
+            </div>
+
+            {/* Bagian Grafik */}
+            <div className="charts-grid">
+                <ChartCard title="Upload 7 Hari Terakhir">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={stats.dailyUploads} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} />
+                            <YAxis allowDecimals={false} />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="count" name="Jumlah Upload" stroke="#8884d8" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </ChartCard>
+
+                <ChartCard title="Distribusi File per Divisi">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={stats.filesPerDivision} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis allowDecimals={false} />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="count" name="Jumlah File" fill="#82ca9d" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </ChartCard>
             </div>
             
-            {/* Tampilkan statistik hanya jika berhasil diambil */}
-            {stats ? (
-                <>
-                    <div className="stats-grid">
-                        <div className="stat-card"><h3>Total Dokumen</h3><p>{stats.totalFiles}</p></div>
-                        <div className="stat-card"><h3>Total Pengguna</h3><p>{stats.totalUsers}</p></div>
-                        <div className="stat-card"><h3>Total Divisi</h3><p>{stats.totalDivisions}</p></div>
-                        <div className="stat-card"><h3>Penyimpanan</h3><p>{(stats.storageUsed / 1024 / 1024).toFixed(2)} MB</p></div>
-                    </div>
-                    
-                    <div className="table-container">
-                        <h3>Aktivitas Upload Terbaru</h3>
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nama File</th>
-                                    <th>Divisi</th>
-                                    <th>Pengunggah</th>
+            {/* Bagian Ringkasan & Aktivitas Terbaru */}
+            <div className="summary-grid">
+                 <ChartCard title="Ringkasan">
+                    <ul className="summary-list">
+                        <li><span>Total Pengguna</span> <strong>{stats.totalUsers}</strong></li>
+                        <li><span>Total Divisi</span> <strong>{stats.totalDivisions}</strong></li>
+                        <li><span>Total Dokumen</span> <strong>{stats.totalFiles}</strong></li>
+                        <li><span>Penyimpanan Terpakai</span> <strong>{stats.storageUsed}</strong></li>
+                    </ul>
+                 </ChartCard>
+
+                 <ChartCard title="Aktivitas Upload Terbaru">
+                    <table className="recent-uploads-table">
+                        <thead>
+                            <tr>
+                                <th>Nama File</th>
+                                <th>Divisi</th>
+                                <th>Pengunggah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {stats.recentUploads.map(file => (
+                                <tr key={file.id}>
+                                    <td>{file.nama_file_asli}</td>
+                                    <td>{file.division?.name ?? 'N/A'}</td>
+                                    <td>{file.uploader?.name ?? 'N/A'}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {stats.recentUploads.map(file => (
-                                    <tr key={file.id}>
-                                        <td>{file.nama_file_asli}</td>
-                                        <td>{file.division ? file.division.name : 'N/A'}</td>
-                                        <td>{file.uploader ? file.uploader.name : 'N/A'}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            ) : (
-                <p>Gagal memuat data statistik. Silakan coba lagi nanti.</p>
-            )}
+                            ))}
+                        </tbody>
+                    </table>
+                 </ChartCard>
+            </div>
         </div>
     );
 };

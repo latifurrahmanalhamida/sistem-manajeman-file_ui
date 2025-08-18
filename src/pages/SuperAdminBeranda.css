@@ -1,0 +1,85 @@
+/* src/pages/SuperAdminBeranda.css */
+
+.super-admin-beranda h1 {
+    margin-bottom: 24px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* 1/3 untuk ringkasan, 2/3 untuk tabel */
+    gap: 20px;
+}
+
+/* --- Styling untuk Progress Bar --- */
+.progress-bar-container {
+    height: 8px;
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #007bff;
+    border-radius: 4px;
+    transition: width 0.5s ease-in-out;
+}
+
+/* --- Styling untuk Ringkasan & Tabel --- */
+.summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.summary-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.summary-list li:last-child {
+    border-bottom: none;
+}
+.summary-list li span {
+    color: #6c757d;
+}
+
+.recent-uploads-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.recent-uploads-table td,
+.recent-uploads-table th {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.recent-uploads-table th {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 992px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

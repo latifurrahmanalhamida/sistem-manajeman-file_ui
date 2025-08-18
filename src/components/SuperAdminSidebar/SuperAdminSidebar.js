@@ -1,12 +1,14 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom'; // <-- Impor 'Link'
-import './SuperAdminSidebar.css';
-import { FaHome, FaUsers, FaCog, FaArrowLeft } from 'react-icons/fa'; // <-- Impor 'FaArrowLeft'
+import { NavLink, Link } from 'react-router-dom';
+// PERUBAHAN: Impor file CSS yang baru
+import '../Sidebar/Sidebar.css'; 
+import { FaHome, FaUsers, FaCog, FaArrowLeft } from 'react-icons/fa';
 
 const SuperAdminSidebar = () => {
     return (
-        <aside className="super-admin-sidebar">
-            <div> {/* Tambahkan div pembungkus untuk item utama */}
+        // PERUBAHAN: Ganti className menjadi 'sidebar'
+        <aside className="sidebar">
+            <div>
                 <div className="sidebar-header">
                     <h3>Super Admin Console</h3>
                 </div>
@@ -23,13 +25,11 @@ const SuperAdminSidebar = () => {
                 </nav>
             </div>
 
-            {/* --- BAGIAN BARU UNTUK TOMBOL KEMBALI --- */}
             <div className="sidebar-footer">
                 <Link to="/dashboard" className="sidebar-back-button">
                     <FaArrowLeft /> Kembali ke Dashboard
                 </Link>
             </div>
-            {/* ------------------------------------------- */}
         </aside>
     );
 };
