@@ -1,57 +1,74 @@
-/* src/pages/DivisionDashboard.css */
+/* src/pages/DashboardView.css */
+
+:root {
+    --primary-blue: #0a2342;
+    --primary-orange: #ff6600;
+    --light-blue-bg: #f0f4f8;
+    --white: #ffffff;
+    --text-dark: #111827;
+    --text-light: #6b7280;
+    --border-color: #e5e7eb;
+}
 
 .dashboard-container, .division-dashboard {
-    padding: 1.5rem 2rem;
-    background-color: #f9fafb;
+    padding: 2rem 2.5rem;
+    background-color: #ffffff;
     height: 100%;
+    font-family: 'Inter', sans-serif; /* Modern, clean font */
 }
 
 .dashboard-header, .dashboard-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .dashboard-header h1, .dashboard-toolbar h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #111827;
+    font-size: 2rem; /* Slightly larger */
+    font-weight: 700; /* Bolder */
+    color: var(--primary-blue);
 }
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Slightly larger cards */
+    gap: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .stat-card {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
+    background-color: var(--white);
+    padding: 1.5rem 2rem;
+    border-radius: 16px; /* More rounded corners */
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+    border: none; /* Remove border for a cleaner look */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
 }
 
 .stat-card h3 {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-light);
+    margin: 0 0 0.75rem 0;
+    font-weight: 500;
 }
 
 .stat-card p {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--primary-blue);
     margin: 0;
 }
 
-.dashboard-toolbar {
+.upload-button-wrapper {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
 }
 
 .upload-button {
@@ -72,12 +89,6 @@
     font-weight: 600;
     white-space: nowrap;
 }
-.upload-button-wrapper {
-    display: flex;
-    justify-content: flex-end; /* Mendorong tombol ke kanan */
-    margin-bottom: 1.5rem;
-}
-
 
 .upload-button:hover {
     background-color: #0b2242;
@@ -89,39 +100,51 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .filters {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .filter-dropdown, .search-bar {
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background-color: white;
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--white);
+    font-size: 0.95rem;
 }
 
 .view-toggle button {
-    background: none;
-    border: 1px solid #d1d5db;
-    padding: 8px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    padding: 10px;
     cursor: pointer;
-    border-radius: 6px;
-    margin-left: 5px;
+    border-radius: 8px;
+    margin-left: 8px;
+    color: var(--text-light);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.view-toggle button:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 .view-toggle button.active {
-    background-color: #e5e7eb;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
 }
 
 .table-container {
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    background-color: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
     overflow: hidden;
+    padding: 1rem;
 }
 
 .data-table {
@@ -132,15 +155,19 @@
 
 .data-table th {
     font-weight: 600;
-    color: #6b7280;
-    padding: 12px 15px;
-    border-bottom: 2px solid #e5e7eb;
+    color: var(--text-light);
+    padding: 16px 20px;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .data-table td {
-    padding: 15px;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 0.9rem;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+    color: var(--text-dark);
 }
 
 .data-table tbody tr:last-child td {
@@ -148,18 +175,23 @@
 }
 
 .data-table tbody tr:hover {
-    background-color: #f9fafb;
+    background-color: var(--light-blue-bg);
 }
 
 .action-button {
-    background: none;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
     cursor: pointer;
-    margin-right: 5px;
-    transition: background-color 0.2s;
+    margin-right: 8px;
+    color: var(--text-light);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
+
 .action-button:hover {
-    background-color: #e5e7eb;
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    color: var(--white);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

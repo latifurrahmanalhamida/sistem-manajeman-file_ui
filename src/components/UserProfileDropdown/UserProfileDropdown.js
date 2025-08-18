@@ -28,7 +28,7 @@ const UserProfileDropdown = () => {
     return (
         <div className="profile-dropdown" ref={dropdownRef}>
             <div className="profile-trigger" onClick={() => setIsOpen(!isOpen)}>
-                <span role="img" aria-label="notifications">🔔</span>
+                <span role="img" aria-label="notifications" className="notification-bell">🔔</span>
                 <span>{user?.name || 'User'}</span>
                 <FaUserCircle size={24} />
             </div>

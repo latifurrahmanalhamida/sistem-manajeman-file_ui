@@ -1,9 +1,20 @@
 /* src/pages/DashboardPage.css */
 
+:root {
+    --primary-blue: #0a2342;
+    --primary-orange: #ff6600;
+    --light-blue-bg: #f0f4f8;
+    --white: #ffffff;
+    --text-dark: #111827;
+    --text-light: #6b7280;
+    --border-color: #e5e7eb;
+}
+
 .dashboard-container {
-    padding: 2rem;
-    background-color: #f9fafb; /* Warna latar belakang yang lembut */
+    padding: 2rem 2.5rem;
+    background-color: #ffffff;
     height: 100%;
+    font-family: 'Inter', sans-serif;
 }
 
 .dashboard-header {
@@ -11,56 +22,62 @@
 }
 
 .dashboard-header h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #111827;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
 }
 
 /* Grid untuk kartu statistik */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .stat-card {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
+    background-color: var(--white);
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
 }
 
 .stat-card h3 {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-light);
+    margin: 0 0 0.75rem 0;
     text-transform: uppercase;
     font-weight: 500;
 }
 
 .stat-card p {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--primary-blue);
     margin: 0;
 }
 
 /* Container untuk tabel */
 .table-container {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
+    background-color: var(--white);
+    padding: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+    border: none;
 }
 
 .table-container h3 {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 600;
-    color: #111827;
-    margin: 0 0 1rem 0;
+    color: var(--primary-blue);
+    margin: 1rem 1rem 1.5rem 1rem;
 }
 
 /* Tabel data */
@@ -71,19 +88,20 @@
 }
 
 .data-table th {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #6b7280;
-    padding: 12px 15px;
-    border-bottom: 2px solid #e5e7eb;
+    color: var(--text-light);
+    padding: 16px 20px;
+    border-bottom: 2px solid var(--border-color);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .data-table td {
-    padding: 15px;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 0.9rem;
-    color: #374151;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+    color: var(--text-dark);
 }
 
 .data-table tbody tr:last-child td {
@@ -91,5 +109,5 @@
 }
 
 .data-table tbody tr:hover {
-    background-color: #f9fafb;
+    background-color: var(--light-blue-bg);
 }
