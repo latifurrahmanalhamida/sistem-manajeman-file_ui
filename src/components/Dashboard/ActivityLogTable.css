@@ -1,26 +1,82 @@
+/* src/components/Dashboard/ActivityLogTable.css */
 .table-wrapper {
     background-color: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1.5rem; /* Padding diperbesar */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow-x: auto; /* Tambahkan scroll horizontal jika perlu */
 }
+
+/* --- STYLE BARU UNTUK FILTER --- */
+.filter-container {
+    margin-bottom: 1.5rem;
+}
+
+.filter-input {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+/* -------------------------------- */
+
 .data-table {
     width: 100%;
     border-collapse: collapse;
 }
+
 .data-table th, .data-table td {
-    padding: 12px 15px;
+    padding: 14px 15px; /* Padding diperbesar */
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
 }
+
 .data-table th {
+    font-weight: 600; /* Dibuat lebih tebal */
+    color: #495057;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8f9fa; /* Efek hover pada baris */
+}
+
+/* --- STYLE BARU UNTUK KOLOM AKSI --- */
+.log-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-weight: 500;
+}
+.log-action .icon-create { color: #198754; } /* Hijau */
+.log-action .icon-update { color: #0d6efd; } /* Biru */
+.log-action .icon-delete { color: #dc3545; } /* Merah */
+.log-action .icon-restore { color: #6f42c1; } /* Ungu */
+/* ---------------------------------- */
+
+.log-target {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
     color: #6c757d;
 }
+
+.log-time {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
 .status-badge {
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 12px; /* Dibuat lebih bulat */
     font-size: 0.8rem;
     font-weight: 500;
 }
@@ -31,4 +87,30 @@
 .status-gagal {
     background-color: #f8d7da;
     color: #842029;
+}
+.filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Agar responsif di layar kecil */
+    gap: 1rem;
+}
+
+.text-filter-group {
+    flex-grow: 1;
+    min-width: 300px;
+}
+
+.date-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-input {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
 }

@@ -1,23 +1,26 @@
 // src/pages/ManajemenPage.js
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import ActivityLogTable from '../components/Dashboard/ActivityLogTable'; // Akan kita buat setelah ini
-import './ManajemenPage.css'; // Akan kita buat setelah ini
+// Ganti Link menjadi NavLink untuk mendapatkan style .active
+import { NavLink } from 'react-router-dom';
+import ActivityLogTable from '../components/Dashboard/ActivityLogTable';
+import './ManajemenPage.css';
 
 const ManajemenPage = () => {
     return (
         <div className="manajemen-page">
             <h1>Manajemen Global</h1>
 
-            <div className="manajemen-nav-buttons">
-                <Link to="/super-admin/manajemen/divisi" className="btn btn-primary">
+            {/* --- BAGIAN INI DIPERBARUI --- */}
+            <div className="manajemen-nav-tabs">
+                <NavLink to="/super-admin/manajemen/divisi" className="nav-tab">
                     Kelola Divisi
-                </Link>
-                <Link to="/super-admin/manajemen/pengguna" className="btn btn-secondary">
+                </NavLink>
+                <NavLink to="/super-admin/manajemen/pengguna" className="nav-tab">
                     Kelola Pengguna
-                </Link>
+                </NavLink>
             </div>
+            {/* ----------------------------- */}
 
             <div className="log-container">
                 <h3>Log Aktivitas Terbaru</h3>

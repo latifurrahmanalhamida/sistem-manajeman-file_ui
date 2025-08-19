@@ -1,0 +1,110 @@
+/* src/pages/KelolaDivisiPage.css */
+
+.kelola-divisi-page .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.kelola-divisi-page .page-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+/* Menggunakan kembali style .btn dan .btn-primary dari ManajemenPage */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+/* Wrapper untuk tabel agar memiliki border dan shadow */
+.table-wrapper {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow-x: auto; /* Tambahkan scroll horizontal jika tabel terlalu lebar */
+}
+
+/* Tabel data utama */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table th {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Tombol aksi di dalam tabel (Edit & Hapus) */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.btn-edit {
+    color: #0d6efd; /* Biru */
+}
+.btn-edit:hover {
+    background-color: #e7f1ff;
+}
+
+.btn-delete {
+    color: #dc3545; /* Merah */
+}
+.btn-delete:hover {
+    background-color: #f8d7da;
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #f5c2c7;
+}
+.page-header .header-actions {
+    display: flex;
+    gap: 10px;
+}

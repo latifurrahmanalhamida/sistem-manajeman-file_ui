@@ -1,0 +1,166 @@
+// src/pages/KelolaDivisiPage.js
+
+import React, { useState, useEffect } from 'react';
+import apiClient from '../services/api';
+import './KelolaDivisiPage.css';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import DivisiFormModal from '../components/Dashboard/DivisiFormModal';
+import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal'; 
+import { useAppContext } from '../context/AppContext';
+
+// Helper function untuk format byte
+const formatBytes = (bytes, decimals = 2) => {
+    if (bytes === 0 || bytes === null) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
+const KelolaDivisiPage = () => {
+    const { triggerActivityLogRefresh } = useAppContext();
+    const [divisions, setDivisions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [divisionToEdit, setDivisionToEdit] = useState(null);
+
+    // --- 2. State baru untuk modal HAPUS ---
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [divisionToDelete, setDivisionToDelete] = useState(null);
+    // ----------------------------------------
+
+    const fetchDivisions = async () => {
+        setLoading(true);
+        try {
+            const response = await apiClient.get('/admin/divisions');
+            setDivisions(response.data);
+        } catch (err) {
+            setError('Gagal memuat data divisi.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchDivisions();
+    }, []);
+
+    const handleOpenCreateModal = () => {
+        setDivisionToEdit(null);
+        setIsModalOpen(true);
+    };
+
+    const handleOpenEditModal = (division) => {
+        setDivisionToEdit(division);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setDivisionToEdit(null);
+    };
+
+    const handleSave = () => {
+        fetchDivisions(); 
+        triggerActivityLogRefresh(); 
+    };
+
+    // --- 3. Fungsi-fungsi baru untuk menangani HAPUS ---
+    const handleDeleteClick = (division) => {
+        setDivisionToDelete(division);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setDivisionToDelete(null);
+    };
+
+    const confirmDelete = async () => {
+        if (!divisionToDelete) return;
+        try {
+            await apiClient.delete(`/admin/divisions/${divisionToDelete.id}`);
+            fetchDivisions(); 
+            triggerActivityLogRefresh();
+        } catch (err) {
+            // Menampilkan error dari backend jika ada (misal: divisi tidak bisa dihapus)
+            alert(err.response?.data?.message || 'Gagal menghapus divisi.');
+            console.error('Delete error:', err);
+        } finally {
+            handleCloseDeleteModal();
+        }
+    };
+    // ----------------------------------------------------
+
+    if (loading) return <div>Memuat data divisi...</div>;
+    if (error) return <div className="error-message">{error}</div>;
+
+    return (
+        <>
+            <div className="kelola-divisi-page">
+                <div className="page-header">
+                    <h1>Kelola Divisi</h1>
+                    <button className="btn btn-primary" onClick={handleOpenCreateModal}>
+                        <FaPlus /> Tambah Divisi
+                    </button>
+                </div>
+
+                <div className="table-wrapper">
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Divisi</th>
+                                <th>Pengguna</th>
+                                <th>Penyimpanan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {divisions.map((division, index) => (
+                                <tr key={division.id}>
+                                    <td>{index + 1}</td>
+                                    <td>{division.name}</td>
+                                    <td>{division.users_count}</td>
+                                    <td>{formatBytes(division.files_sum_ukuran_file)}</td>
+                                    <td className="action-buttons">
+                                        <button className="btn-icon btn-edit" title="Edit" onClick={() => handleOpenEditModal(division)}>
+                                            <FaEdit />
+                                        </button>
+                                        {/* 4. Hubungkan tombol Hapus dengan fungsi */}
+                                        <button className="btn-icon btn-delete" title="Hapus" onClick={() => handleDeleteClick(division)}>
+                                            <FaTrash />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <DivisiFormModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSave={handleSave}
+                divisionToEdit={divisionToEdit}
+            />
+
+            {/* --- 5. Render Modal Konfirmasi Hapus --- */}
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={handleCloseDeleteModal}
+                onConfirm={confirmDelete}
+                message={`Apakah Anda yakin ingin menghapus divisi "${divisionToDelete?.name}"? Semua file dan pengguna di dalamnya akan terpengaruh.`}
+                isDanger={true}
+                confirmText="Ya, Hapus"
+            />
+            {/* -------------------------------------- */}
+        </>
+    );
+};
+
+export default KelolaDivisiPage;

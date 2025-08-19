@@ -3,6 +3,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { AppProvider } from './context/AppContext';
 
 // --- Impor Komponen & Halaman Utama ---
 import ProtectedRoute from './components/ProtectedRoute';
@@ -23,6 +24,9 @@ import TrashUserPage from './pages/TrashUserPage';
 import SuperAdminLayout from './components/Layout/SuperAdminLayout';
 import SuperAdminBeranda from './pages/SuperAdminBeranda';
 import ManajemenPage from './pages/ManajemenPage'; 
+import KelolaDivisiPage from './pages/KelolaDivisiPage';
+import KelolaPenggunaPage from './pages/KelolaPenggunaPage'; 
+import KelolaPenggunaSampahPage from './pages/KelolaPenggunaSampahPage'; 
 // import PengaturanPage from './pages/PengaturanPage'; 
 
 // --- Komponen untuk rute Panel Admin Devisi (Tidak berubah) ---
@@ -55,41 +59,46 @@ const MainRoutes = () => (
 // --- Komponen Utama App (Struktur routing diperbarui) ---
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                    {/* Rute publik */}
-                    <Route path="/login" element={<LoginPage />} />
-                    
-                    {/* Rute terproteksi untuk Panel Admin Devisi (Tidak berubah) */}
-                    <Route path="/panel-admin/*" element={
-                        <ProtectedRoute allowedRoles={['admin_devisi']}>
-                            <AdminPanelRoutes />
-                        </ProtectedRoute>
-                    } />
-                    
-                    {/* RUTE SUPER ADMIN YANG DIPERBAIKI */}
-                    <Route 
-                        path="/super-admin"
-                        element={
-                            <ProtectedRoute allowedRoles={['super_admin']}>
-                                <SuperAdminLayout />
+        <AppProvider> 
+            <AuthProvider>
+                <Router>
+                    <Routes>
+                        {/* Rute publik */}
+                        <Route path="/login" element={<LoginPage />} />
+                        
+                        {/* Rute terproteksi untuk Panel Admin Devisi (Tidak berubah) */}
+                        <Route path="/panel-admin/*" element={
+                            <ProtectedRoute allowedRoles={['admin_devisi']}>
+                                <AdminPanelRoutes />
                             </ProtectedRoute>
-                        }
-                    >
-                        {/* Rute nested didefinisikan sebagai children di sini */}
-                        <Route index element={<Navigate to="beranda" replace />} />
-                        <Route path="beranda" element={<SuperAdminBeranda />} />
-                        <Route path="manajemen" element={<ManajemenPage />} />
-                        {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
-                        <Route path="*" element={<Navigate to="beranda" replace />} />
-                    </Route>
-                    
-                    {/* Rute terproteksi untuk semua halaman utama lainnya */}
-                    <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
-                </Routes>
-            </Router>
-        </AuthProvider>
+                        } />
+                        
+                        {/* RUTE SUPER ADMIN YANG DIPERBAIKI */}
+                        <Route 
+                            path="/super-admin"
+                            element={
+                                <ProtectedRoute allowedRoles={['super_admin']}>
+                                    <SuperAdminLayout />
+                                </ProtectedRoute>
+                            }
+                        >
+                            {/* Rute nested didefinisikan sebagai children di sini */}
+                            <Route index element={<Navigate to="beranda" replace />} />
+                            <Route path="beranda" element={<SuperAdminBeranda />} />
+                            <Route path="manajemen" element={<ManajemenPage />} />
+                            <Route path="manajemen/divisi" element={<KelolaDivisiPage />} />
+                            <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
+                            <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
+                            {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
+                            <Route path="*" element={<Navigate to="beranda" replace />} />
+                        </Route>
+                        
+                        {/* Rute terproteksi untuk semua halaman utama lainnya */}
+                        <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
+                    </Routes>
+                </Router>
+            </AuthProvider>
+        </AppProvider>
     );
 }
 
