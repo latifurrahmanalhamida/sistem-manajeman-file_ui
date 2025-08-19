@@ -22,8 +22,7 @@ import TrashUserPage from './pages/TrashUserPage';
 // --- IMPORT BARU UNTUK SUPER ADMIN ---
 import SuperAdminLayout from './components/Layout/SuperAdminLayout';
 import SuperAdminBeranda from './pages/SuperAdminBeranda';
-// Halaman lain bisa ditambahkan nanti
-// import ManajemenPage from './pages/ManajemenPage'; 
+import ManajemenPage from './pages/ManajemenPage'; 
 // import PengaturanPage from './pages/PengaturanPage'; 
 
 // --- Komponen untuk rute Panel Admin Devisi (Tidak berubah) ---
@@ -53,8 +52,6 @@ const MainRoutes = () => (
     </AppLayout>
 );
 
-// --- Komponen SuperAdminRoutes DIHAPUS KARENA RESTRUKTURISASI ---
-
 // --- Komponen Utama App (Struktur routing diperbarui) ---
 function App() {
     return (
@@ -73,7 +70,7 @@ function App() {
                     
                     {/* RUTE SUPER ADMIN YANG DIPERBAIKI */}
                     <Route 
-                        path="/super-admin" // Hapus "/*"
+                        path="/super-admin"
                         element={
                             <ProtectedRoute allowedRoles={['super_admin']}>
                                 <SuperAdminLayout />
@@ -83,13 +80,12 @@ function App() {
                         {/* Rute nested didefinisikan sebagai children di sini */}
                         <Route index element={<Navigate to="beranda" replace />} />
                         <Route path="beranda" element={<SuperAdminBeranda />} />
-                        {/* <Route path="manajemen" element={<ManajemenPage />} /> */}
+                        <Route path="manajemen" element={<ManajemenPage />} />
                         {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
                         <Route path="*" element={<Navigate to="beranda" replace />} />
                     </Route>
                     
                     {/* Rute terproteksi untuk semua halaman utama lainnya */}
-                    {/* Pastikan rute ini paling bawah agar tidak menimpa /super-admin */}
                     <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
                 </Routes>
             </Router>
