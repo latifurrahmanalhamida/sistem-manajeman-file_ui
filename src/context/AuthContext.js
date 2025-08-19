@@ -40,9 +40,9 @@ export const AuthProvider = ({ children }) => {
         bootstrapAuth();
     }, []);
 
-    const login = async (email, password) => {
+    const login = async (identifier, password) => {
         try {
-            const response = await loginUser({ email, password });
+            const response = await loginUser({ identifier, password });
             const { access_token, user: userData } = response.data;
 
             // Simpan token dan user di localStorage

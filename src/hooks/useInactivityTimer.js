@@ -46,7 +46,7 @@ const useInactivityTimer = (onTimeout, timeoutDuration) => {
                 window.removeEventListener(event, resetTimer);
             });
         };
-    }, [resetTimer]); // Jalankan efek ini hanya jika resetTimer berubah
+    }, [resetTimer, activityEvents]); // Jalankan efek ini hanya jika resetTimer berubah
 
     return null; // Hook ini tidak me-render apa pun
 };

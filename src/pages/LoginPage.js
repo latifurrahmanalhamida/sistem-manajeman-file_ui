@@ -7,7 +7,7 @@ import './LoginPage.css'; // <-- 1. Impor file CSS
 const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
-    const [email, setEmail] = useState('');
+        const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
@@ -15,7 +15,7 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
         try {
-            await login(email, password);
+            await login(identifier, password);
             navigate('/dashboard');
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Login gagal. Periksa kembali email dan password Anda.';
@@ -42,13 +42,13 @@ const LoginPage = () => {
                     <div className="title-underline"></div>
                     <form onSubmit={handleLogin}>
                         <div className="input-group">
-                            <label>Email</label>
+                            <label>NIPP / Email</label>
                             <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                type="text"
+                                value={identifier}
+                                onChange={(e) => setIdentifier(e.target.value)}
                                 required
-                                placeholder="contoh@kai.id"
+                                placeholder="Masukkan NIPP atau Email"
                             />
                         </div>
                         <div className="input-group">
