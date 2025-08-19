@@ -13,12 +13,7 @@ const AppLayout = ({ children }) => {
     // Tentukan durasi timeout berdasarkan peran pengguna
     const getTimeoutDuration = () => {
         // Default timeout 3 menit untuk user divisi (role_id 3)
-        let timeout = 30 * 60 * 1000; // 30 menit dalam milidetik
-
-        // Timeout 120 menit untuk super admin (1) dan admin (2)
-        if (user && (user.role_id === 1 || user.role_id === 2)) {
-            timeout = 120 * 60 * 1000; // 120 menit dalam milidetik
-        }
+        let timeout = 15 * 60 * 1000; // 30 menit dalam milidetik
         return timeout;
     };
 
