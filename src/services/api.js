@@ -51,15 +51,18 @@ export const getDivisions = () => apiClient.get('/admin/divisions');
 // File Management
 export const getFiles = () => apiClient.get('/files');
 export const uploadFile = (formData, options = {}) => {
-    const { overwrite = false, newName = null } = options;
+    const { overwrite = false, newName = null, folderId = null } = options;
     if (overwrite) {
         formData.append('overwrite', 'true');
     }
     if (newName) {
         formData.append('new_name', newName);
     }
-    return apiClient.post('/files', formData, { 
-        headers: { 'Content-Type': 'multipart/form-data' } 
+    if (folderId) {
+        formData.append('folder_id', folderId);
+    }
+    return apiClient.post('/files', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
     });
 };
 export const downloadFile = (fileId) => apiClient.get(`/files/${fileId}`, { responseType: 'blob' });

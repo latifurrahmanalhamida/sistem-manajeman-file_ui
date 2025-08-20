@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getFiles, downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
+import { downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
+import FolderCard from '../components/FolderCard/FolderCard';
+import { FaFolder } from 'react-icons/fa';
 import './DashboardView.css';
 
 // Impor komponen
@@ -81,8 +84,23 @@ import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave 
 
 
 // --- Komponen Dashboard untuk Admin/User Devisi ---
+// Helper function untuk format ukuran bytes
+const formatBytes = (bytes, decimals = 2) => {
+    if (bytes === null || bytes === 0) return '0 Bytes';
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
 const DivisionUserDashboard = () => {
     const { user, searchQuery, loading: authLoading } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [currentFolderId, setCurrentFolderId] = useState(null);
+    const [breadcrumbs, setBreadcrumbs] = useState([]);
+    const [folders, setFolders] = useState([]);
     const [files, setFiles] = useState([]);
     const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -98,23 +116,33 @@ const DivisionUserDashboard = () => {
     const [renameModal, setRenameModal] = useState({ isOpen: false, file: null });
     const [newName, setNewName] = useState('');
 
-    const fetchFiles = async () => {
+    const fetchFiles = React.useCallback(async () => {
         setIsFilesLoading(true);
         try {
-            const response = await getFiles();
-            setFiles(response.data);
+            const folder_id = searchParams.get('folder_id');
+            const url = folder_id ? `/files?folder_id=${folder_id}` : '/files';
+            const res = await fetch(process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}${url}` : `http://localhost:8000/api${url}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            });
+            const data = await res.json();
+            setFolders(data.folders || []);
+            setFiles(data.files || []);
+            setBreadcrumbs(data.breadcrumbs || []);
         } catch (error) {
-            console.error('Could not fetch files:', error);
+            console.error('Could not fetch items:', error);
         } finally {
             setIsFilesLoading(false);
         }
-    };
+    }, [searchParams]);
 
     useEffect(() => {
         if (!authLoading && user) {
+            // Sinkronkan state currentFolderId dengan URL
+            const fid = searchParams.get('folder_id');
+            setCurrentFolderId(fid ? parseInt(fid, 10) : null);
             fetchFiles();
         }
-    }, [authLoading, user]);
+    }, [authLoading, user, searchParams, fetchFiles]);
 
     const handleDownload = async (file) => {
         try {
@@ -215,6 +243,11 @@ const DivisionUserDashboard = () => {
         }
 
         try {
+            // Sertakan folder_id jika berada di dalam folder
+            const fid = searchParams.get('folder_id');
+            if (fid) {
+                formData.append('folder_id', fid);
+            }
             await uploadFile(formData, options);
             const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
             setNotification({ isOpen: true, message: successMessage, type: 'success' });
@@ -252,6 +285,10 @@ const DivisionUserDashboard = () => {
         setNotification({ isOpen: false, message: '', type: '' });
     };
 
+    const filteredFolders = folders.filter(folder =>
+        folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const filteredFiles = files.filter(file =>
         file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -262,7 +299,17 @@ const DivisionUserDashboard = () => {
     return (
         <div className="division-dashboard">
             <div className="dashboard-toolbar">
-                <h1>{user?.division?.name || 'File Divisi'}</h1>
+                <div>
+                    <div className="breadcrumbs">
+                        <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentFolderId(null); }}>Root</span>
+                        {breadcrumbs.map((bc, idx) => (
+                            <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ folder_id: bc.id }); setCurrentFolderId(bc.id); }}>
+                                {' / '}{bc.name}
+                            </span>
+                        ))}
+                    </div>
+                    <h1>{user?.division?.name || 'File Divisi'}</h1>
+                </div>
                 <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
                     <FaPlus size={14} /> <span>Tambah File</span>
                 </button>
@@ -289,6 +336,21 @@ const DivisionUserDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
+                            {/* Render folders terlebih dahulu */}
+                            {filteredFolders.map(folder => (
+                                <tr key={`folder-${folder.id}`} className="folder-row" onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
+                                    <td></td>
+                                    <td className="folder-name-cell">
+                                        <FaFolder /> <span>{folder.name}</span>
+                                    </td>
+                                    <td>{folder.user?.name || '-'}</td>
+                                    <td>{new Date(folder.updated_at).toLocaleDateString('id-ID')}</td>
+                                    <td>{formatBytes(folder.files_sum_ukuran_file)}</td>
+                                    <td>{/* Aksi untuk folder */}</td>
+                                </tr>
+                            ))}
+
+                            {/* Kemudian render files */}
                             {filteredFiles.map(file => (
                                 <tr key={file.id}>
                                     <td>
@@ -320,6 +382,13 @@ const DivisionUserDashboard = () => {
                 </div>
             ) : (
                 <div className="stats-grid">
+                    {/* Render folder cards */}
+                    {filteredFolders.map(folder => (
+                        <div key={`folder-${folder.id}`} onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
+                            <FolderCard folder={folder} />
+                        </div>
+                    ))}
+                    {/* Render file cards */}
                     {filteredFiles.map(file => (
                         <FileCard 
                             key={file.id} 
@@ -334,7 +403,7 @@ const DivisionUserDashboard = () => {
             )}
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} />
+                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />
             </Modal>
             
             <ConfirmationModal

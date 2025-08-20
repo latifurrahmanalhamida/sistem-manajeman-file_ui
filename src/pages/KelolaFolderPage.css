@@ -1,94 +1,30 @@
-/* Styling untuk Tombol Utama */
-.btn-add-folder {
-    background-color: #4A4EBF; /* Warna biru keunguan */
-    color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    transition: background-color 0.2s;
+/* src/pages/KelolaFolderPage.css */
+
+.kelola-folder-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-.btn-add-folder:hover {
-    background-color: #3a3d99;
-}
+/* Menggunakan kembali style dari file lain agar konsisten */
+.kelola-folder-page h1 { margin: 0; font-size: 1.8rem; }
+.kelola-folder-page .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; border: none; cursor: pointer; }
+.kelola-folder-page .btn-primary { background-color: #0d6efd; color: white; }
 
-/* Styling untuk Modal */
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+.kelola-folder-page .table-wrapper { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
+.kelola-folder-page .data-table { width: 100%; border-collapse: collapse; }
+.kelola-folder-page .data-table th, .kelola-folder-page .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+.kelola-folder-page .data-table th { font-weight: 500; color: #6c757d; }
 
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 400px;
-}
+.kelola-folder-page .action-buttons { display: flex; gap: 10px; }
+.kelola-folder-page .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 5px; border-radius: 4px; }
+.kelola-folder-page .btn-edit { color: #0d6efd; }
+.kelola-folder-page .btn-delete { color: #dc3545; }
 
-.modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-}
-
-.modal-content .form-input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.modal-actions .btn-secondary {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    color: #333;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.modal-actions .btn-primary {
-    background-color: #4A4EBF;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-}
-
-/* Styling untuk Tabel */
-.professional-table {
-    width: 100%;
-    border-collapse: collapse; /* Menghilangkan jarak antar border */
-}
-
-.professional-table th, .professional-table td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee; /* Garis bawah halus di setiap baris */
-}
-
-.professional-table th {
-    font-weight: bold;
-    color: #888;
-    text-transform: uppercase;
-    font-size: 0.85rem;
+.folder-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
 }

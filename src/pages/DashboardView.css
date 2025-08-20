@@ -163,3 +163,13 @@
 .action-button:hover {
     background-color: #e5e7eb;
 }
+
+/* Styling untuk baris folder */
+.folder-row {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.folder-row:hover {
+    background-color: #e9ecef;
+}
