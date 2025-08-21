@@ -8,7 +8,8 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition: box-shadow 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s;
+    cursor: pointer;
 }
 
 .file-card:hover {
@@ -16,15 +17,42 @@
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
-.file-icon {
-    font-size: 3rem;
+.file-card.selected {
+    background-color: #e0e7ff;
+    border-color: #6366f1;
+}
+
+.file-card-icon {
+    font-size: 3rem; /* Ganti size ke font-size */
     margin-bottom: 1rem;
     color: #495057;
 }
 
-.file-name {
+.file-card-name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.file-card-name {
     font-weight: 600;
     color: #343a40;
-    word-break: break-all; /* Mencegah nama file panjang merusak layout */
+    word-break: break-all;
     margin: 0;
+}
+
+.favorite-button-grid {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.file-card-info {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    gap: 1rem;
 }

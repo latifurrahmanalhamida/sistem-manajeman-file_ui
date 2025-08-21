@@ -50,7 +50,7 @@ export const getDivisions = () => apiClient.get('/admin/divisions');
 
 // File Management
 export const getFiles = () => apiClient.get('/files');
-export const uploadFile = (formData, options = {}) => {
+export const uploadFile = (formData, options = {}, config = {}) => {
     const { overwrite = false, newName = null } = options;
     if (overwrite) {
         formData.append('overwrite', 'true');
@@ -58,8 +58,9 @@ export const uploadFile = (formData, options = {}) => {
     if (newName) {
         formData.append('new_name', newName);
     }
-    return apiClient.post('/files', formData, { 
-        headers: { 'Content-Type': 'multipart/form-data' } 
+    return apiClient.post('/files', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        ...config
     });
 };
 export const downloadFile = (fileId) => apiClient.get(`/files/${fileId}`, { responseType: 'blob' });
@@ -76,5 +77,6 @@ export const restoreFile = (fileId, options = {}) => {
     return apiClient.post(`/files/${fileId}/restore`, data);
 };
 export const forceDeleteFile = (fileId) => apiClient.delete(`/files/${fileId}/force`);
+export const renameFile = (fileId, newName) => apiClient.put(`/files/${fileId}/rename`, { new_name: newName });
 
 export default apiClient;
