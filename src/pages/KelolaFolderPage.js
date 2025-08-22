@@ -7,6 +7,7 @@ import './KelolaFolderPage.css';
 import { FaPlus, FaEdit, FaTrash, FaFolder } from 'react-icons/fa';
 import FolderFormModal from '../components/Dashboard/FolderFormModal';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
+import { useAuth } from '../context/AuthContext';
 
 const formatBytes = (bytes, decimals = 2) => {
   if (bytes === null || bytes === 0) return '0 Bytes';
@@ -18,6 +19,7 @@ const formatBytes = (bytes, decimals = 2) => {
 };
 
 const KelolaFolderPage = () => {
+  const { user } = useAuth();
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -112,9 +114,9 @@ const KelolaFolderPage = () => {
         <div className="page-header">
           <div>
             <div className="breadcrumbs">
-              <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentParentId(null); }}>Root</span>
+              <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentParentId(null); }}>{user?.division?.name ? `${user.division.name} Drive` : 'My Drive'}</span>
               {breadcrumbs.map(bc => (
-                <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ parent_id: bc.id }); setCurrentParentId(bc.id); }}>{' / '}{bc.name}</span>
+                <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ parent_id: bc.id }); setCurrentParentId(bc.id); }}>{' > '}{bc.name}</span>
               ))}
             </div>
             <h1>Kelola Folder</h1>

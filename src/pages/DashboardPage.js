@@ -100,6 +100,7 @@ const DivisionUserDashboard = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const [breadcrumbs, setBreadcrumbs] = useState([]);
+    const [currentFolder, setCurrentFolder] = useState(null);
     const [folders, setFolders] = useState([]);
     const [files, setFiles] = useState([]);
     const [isFilesLoading, setIsFilesLoading] = useState(true);
@@ -115,6 +116,7 @@ const DivisionUserDashboard = () => {
     const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
     const [renameModal, setRenameModal] = useState({ isOpen: false, file: null });
     const [newName, setNewName] = useState('');
+    const rootLabel = user?.division?.name ? `${user.division.name} Drive` : 'My Drive';
 
     const fetchFiles = React.useCallback(async () => {
         setIsFilesLoading(true);
@@ -128,6 +130,7 @@ const DivisionUserDashboard = () => {
             setFolders(data.folders || []);
             setFiles(data.files || []);
             setBreadcrumbs(data.breadcrumbs || []);
+            setCurrentFolder(data.current_folder || null);
         } catch (error) {
             console.error('Could not fetch items:', error);
         } finally {
@@ -301,28 +304,40 @@ const DivisionUserDashboard = () => {
             <div className="dashboard-toolbar">
                 <div>
                     <div className="breadcrumbs">
-                        <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentFolderId(null); }}>Root</span>
+                        <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentFolderId(null); }}>{rootLabel}</span>
                         {breadcrumbs.map((bc, idx) => (
                             <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ folder_id: bc.id }); setCurrentFolderId(bc.id); }}>
-                                {' / '}{bc.name}
+                                {' > '}{bc.name}
                             </span>
                         ))}
                     </div>
-                    <h1>{user?.division?.name || 'File Divisi'}</h1>
+                    {currentFolderId !== null && currentFolder && (
+                        <h1>{currentFolder.name}</h1>
+                    )}
                 </div>
                 <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
                     <FaPlus size={14} /> <span>Tambah File</span>
                 </button>
             </div>
 
-            <div className="filter-bar">
-                <div className="view-toggle">
-                    <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''}>List</button>
-                    <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}>Grid</button>
+            
+            {/* Folder Section - Grid */}
+            <div className="folders-section">
+                <h2>Folders</h2>
+                <div className="folders-grid">
+                    {filteredFolders.map(folder => (
+                        <div key={`folder-${folder.id}`} className="folder-card" onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
+                            <FolderCard folder={folder} />
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            {viewMode === 'list' ? (
+            <hr />
+
+            {/* Files Section - List */}
+            <div className="files-section">
+                <h2>Files</h2>
                 <div className="file-table-container">
                     <table className="data-table">
                         <thead>
@@ -336,21 +351,6 @@ const DivisionUserDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {/* Render folders terlebih dahulu */}
-                            {filteredFolders.map(folder => (
-                                <tr key={`folder-${folder.id}`} className="folder-row" onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
-                                    <td></td>
-                                    <td className="folder-name-cell">
-                                        <FaFolder /> <span>{folder.name}</span>
-                                    </td>
-                                    <td>{folder.user?.name || '-'}</td>
-                                    <td>{new Date(folder.updated_at).toLocaleDateString('id-ID')}</td>
-                                    <td>{formatBytes(folder.files_sum_ukuran_file)}</td>
-                                    <td>{/* Aksi untuk folder */}</td>
-                                </tr>
-                            ))}
-
-                            {/* Kemudian render files */}
                             {filteredFiles.map(file => (
                                 <tr key={file.id}>
                                     <td>
@@ -380,27 +380,7 @@ const DivisionUserDashboard = () => {
                         </tbody>
                     </table>
                 </div>
-            ) : (
-                <div className="stats-grid">
-                    {/* Render folder cards */}
-                    {filteredFolders.map(folder => (
-                        <div key={`folder-${folder.id}`} onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
-                            <FolderCard folder={folder} />
-                        </div>
-                    ))}
-                    {/* Render file cards */}
-                    {filteredFiles.map(file => (
-                        <FileCard 
-                            key={file.id} 
-                            file={file} 
-                            onPreview={handlePreview} 
-                            onDownload={handleDownload} 
-                            onDelete={handleDeleteClick} 
-                            onToggleFavorite={handleToggleFavorite} 
-                        />
-                    ))}
-                </div>
-            )}
+            </div>
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
                 <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />

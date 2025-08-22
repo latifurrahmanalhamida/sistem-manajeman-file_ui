@@ -17,6 +17,45 @@
     margin: 0 0 1.5rem 0;
 }
 
+/* Header baru dua tingkat */
+.admin-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.page-subtitle {
+    font-size: 14px;
+    color: #6c757d;
+    display: block;
+}
+
+.page-main-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 4px;
+    color: #212529;
+}
+
+/* Controls: posisi ikon sampah */
+.controls-container {
+    display: flex;
+    align-items: center; /* sejajar vertikal */
+    gap: 16px; /* jarak antar elemen */
+}
+
+.controls-container a[title="Lihat User di Sampah"] {
+    font-size: 1.6em; /* perbesar ikon */
+    color: #6c757d; /* abu-abu konsisten */
+    display: flex;
+    align-items: center;
+}
+
+.controls-container a[title="Lihat User di Sampah"]:hover {
+    color: #343a40;
+}
+
 .add-user-button {
     display: flex;
     align-items: center;

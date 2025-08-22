@@ -76,3 +76,12 @@
     color: #dc3545;
     border-color: #dc3545;
 }
+
+/* Style untuk Logo di Sidebar */
+.sidebar-logo {
+    height: 40px;
+    width: auto;
+    max-width: 80%;
+    margin: 20px auto;
+    display: block;
+}

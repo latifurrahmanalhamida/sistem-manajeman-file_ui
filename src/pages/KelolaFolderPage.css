@@ -12,6 +12,14 @@
 .kelola-folder-page .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; border: none; cursor: pointer; }
 .kelola-folder-page .btn-primary { background-color: #0d6efd; color: white; }
 
+/* Breadcrumb interaktif */
+.kelola-folder-page .breadcrumbs .breadcrumb-item {
+  cursor: pointer;
+}
+.kelola-folder-page .breadcrumbs .breadcrumb-item:hover {
+  text-decoration: underline;
+}
+
 .kelola-folder-page .table-wrapper { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
 .kelola-folder-page .data-table { width: 100%; border-collapse: collapse; }
 .kelola-folder-page .data-table th, .kelola-folder-page .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f0f0f0; }
