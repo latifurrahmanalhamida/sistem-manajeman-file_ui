@@ -6,7 +6,7 @@
     border-right: 1px solid #dee2e6;
     display: flex;
     flex-direction: column;
-    padding: 1.5rem 1rem;
+    padding: 1rem 1rem;
 }
 
 .sidebar-logo {
@@ -66,4 +66,10 @@
 .storage-text {
     font-size: 0.8rem;
     color: #6c757d;
+}
+
+.sidebar-logo-img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Remove extra space below image */
 }

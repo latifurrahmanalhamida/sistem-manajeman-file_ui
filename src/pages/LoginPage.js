@@ -29,8 +29,9 @@ const LoginPage = () => {
         <div className="login-page">
             <div className="left-pane">
                 <div className="overlay">
-                    <h1 className="overlay-title">Sistem Manajemen File</h1>
-                    <p className="overlay-subtitle">Menghubungkan Setiap Perjalanan, Mengelola Setiap Dokumen.</p>
+                    <img src="/images/KAIwhite.svg" alt="KAI Logo" className="overlay-title" />
+                    <img src="/images/DAOP7DRV.svg" alt="DAOP7DRV Logo" className="overlay-subtitle daop7drv-logo" />
+                    <p className="overlay-subtitle">PT. Kereta Api Indonesia<br></br> Daerah Operasi 7 Madiun</p>
                 </div>
             </div>
 

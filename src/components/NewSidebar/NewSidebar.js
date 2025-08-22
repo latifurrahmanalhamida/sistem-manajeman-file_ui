@@ -9,7 +9,7 @@ const NewSidebar = () => {
     return (
         <aside className="new-sidebar">
             <div className="sidebar-logo">
-                My Drive
+                <img src="/images/DAOP7DRVbar.svg" alt="Logo" className="sidebar-logo-img" />
             </div>
             <ul className="sidebar-menu">
                 <li className="menu-item">
