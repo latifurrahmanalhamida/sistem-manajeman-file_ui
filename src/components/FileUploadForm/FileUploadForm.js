@@ -6,7 +6,7 @@ import './FileUploadForm.css';
 import { FaUpload } from 'react-icons/fa';
 import Notification from '../Notification/Notification';
 
-const FileUploadForm = ({ onUploadComplete, onConflict }) => {
+const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }) => {
     const [file, setFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
@@ -33,7 +33,7 @@ const FileUploadForm = ({ onUploadComplete, onConflict }) => {
         formData.append('file', file);
 
         try {
-            await uploadFile(formData);
+            await uploadFile(formData, { folderId: currentFolderId });
             setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
         } catch (err) {
             if (err.response && err.response.status === 409) {

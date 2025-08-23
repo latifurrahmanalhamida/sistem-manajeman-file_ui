@@ -72,11 +72,16 @@ const DaftarUserPage = () => {
 
     return (
         <div className="admin-page-container">
-            <div className="admin-page-header">
-                <h2>{adminUser?.division?.name || 'Semua User'}</h2>
-                <Link to="/panel-admin/tambah-user" className="add-user-button">
-                    <FaPlus size={14} /> <span>Tambah User</span>
-                </Link>
+            <div className="admin-header-container">
+                <div className="admin-header-title">
+                    <span className="page-subtitle">{adminUser?.division?.name ? `${adminUser.division.name} Drive` : 'Semua User'}</span>
+                    <h1 className="page-main-title">Kelola User</h1>
+                </div>
+                <div className="admin-header-actions">
+                    <Link to="/panel-admin/tambah-user" className="add-user-button">
+                        <FaPlus size={14} /> <span>Tambah User</span>
+                    </Link>
+                </div>
             </div>
             <div className="controls-container">
                 <input
@@ -86,8 +91,10 @@ const DaftarUserPage = () => {
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                 />
-                {/* Link baru ke halaman Sampah */}
-                <Link to="/panel-admin/users/trash">Lihat User di Sampah</Link>
+                {/* Link ikon ke halaman Sampah */}
+                <Link to="/panel-admin/users/trash" title="Lihat User di Sampah">
+                    <FaTrash />
+                </Link>
             </div>
             <div className="table-container">
                 <table className="data-table">

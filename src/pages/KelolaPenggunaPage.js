@@ -9,6 +9,7 @@ import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal
 import Badge from '../components/Dashboard/Badge';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 const getRoleBadgeType = (roleName) => {
     if (roleName === 'super_admin') return 'danger';
@@ -18,6 +19,7 @@ const getRoleBadgeType = (roleName) => {
 
 const KelolaPenggunaPage = () => {
     const { triggerActivityLogRefresh } = useAppContext();
+    const { user } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -99,7 +101,7 @@ const KelolaPenggunaPage = () => {
         <>
             <div className="kelola-divisi-page">
                 <div className="page-header">
-                    <h1>Kelola Pengguna</h1>
+                    <h1>{user?.division?.name ? `${user.division.name} Drive` : 'My Drive'}</h1>
                     {/* --- PERUBAHAN ADA DI SINI --- */}
                     <div className="header-actions">
                         <Link to="/super-admin/manajemen/pengguna/sampah" className="btn btn-secondary">

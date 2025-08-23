@@ -19,6 +19,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import TrashPage from './pages/TrashPage';
 import EditUserPage from './pages/EditUserPage';
 import TrashUserPage from './pages/TrashUserPage';
+import KelolaFolderPage from './pages/KelolaFolderPage';
 
 // --- IMPORT BARU UNTUK SUPER ADMIN ---
 import SuperAdminLayout from './components/Layout/SuperAdminLayout';
@@ -37,6 +38,7 @@ const AdminPanelRoutes = () => (
             <Route path="/tambah-user" element={<TambahUserPage />} />
             <Route path="/users/edit/:userId" element={<EditUserPage />} />
             <Route path="/users/trash" element={<TrashUserPage />} /> 
+            <Route path="/folders" element={<KelolaFolderPage />} />
             <Route path="*" element={<Navigate to="/panel-admin/users" replace />} />
         </Routes>
     </AdminPanelLayout>

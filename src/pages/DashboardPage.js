@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getFiles, downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
+import { downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
+import FolderCard from '../components/FolderCard/FolderCard';
+import { FaFolder } from 'react-icons/fa';
 import './DashboardView.css';
 
 // Impor komponen
@@ -81,8 +84,24 @@ import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave 
 
 
 // --- Komponen Dashboard untuk Admin/User Devisi ---
+// Helper function untuk format ukuran bytes
+const formatBytes = (bytes, decimals = 2) => {
+    if (bytes === null || bytes === 0) return '0 Bytes';
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
 const DivisionUserDashboard = () => {
     const { user, searchQuery, loading: authLoading } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [currentFolderId, setCurrentFolderId] = useState(null);
+    const [breadcrumbs, setBreadcrumbs] = useState([]);
+    const [currentFolder, setCurrentFolder] = useState(null);
+    const [folders, setFolders] = useState([]);
     const [files, setFiles] = useState([]);
     const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -97,24 +116,36 @@ const DivisionUserDashboard = () => {
     const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
     const [renameModal, setRenameModal] = useState({ isOpen: false, file: null });
     const [newName, setNewName] = useState('');
+    const rootLabel = user?.division?.name ? `${user.division.name} Drive` : 'My Drive';
 
-    const fetchFiles = async () => {
+    const fetchFiles = React.useCallback(async () => {
         setIsFilesLoading(true);
         try {
-            const response = await getFiles();
-            setFiles(response.data);
+            const folder_id = searchParams.get('folder_id');
+            const url = folder_id ? `/files?folder_id=${folder_id}` : '/files';
+            const res = await fetch(process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}${url}` : `http://localhost:8000/api${url}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            });
+            const data = await res.json();
+            setFolders(data.folders || []);
+            setFiles(data.files || []);
+            setBreadcrumbs(data.breadcrumbs || []);
+            setCurrentFolder(data.current_folder || null);
         } catch (error) {
-            console.error('Could not fetch files:', error);
+            console.error('Could not fetch items:', error);
         } finally {
             setIsFilesLoading(false);
         }
-    };
+    }, [searchParams]);
 
     useEffect(() => {
         if (!authLoading && user) {
+            // Sinkronkan state currentFolderId dengan URL
+            const fid = searchParams.get('folder_id');
+            setCurrentFolderId(fid ? parseInt(fid, 10) : null);
             fetchFiles();
         }
-    }, [authLoading, user]);
+    }, [authLoading, user, searchParams, fetchFiles]);
 
     const handleDownload = async (file) => {
         try {
@@ -215,6 +246,11 @@ const DivisionUserDashboard = () => {
         }
 
         try {
+            // Sertakan folder_id jika berada di dalam folder
+            const fid = searchParams.get('folder_id');
+            if (fid) {
+                formData.append('folder_id', fid);
+            }
             await uploadFile(formData, options);
             const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
             setNotification({ isOpen: true, message: successMessage, type: 'success' });
@@ -252,6 +288,10 @@ const DivisionUserDashboard = () => {
         setNotification({ isOpen: false, message: '', type: '' });
     };
 
+    const filteredFolders = folders.filter(folder =>
+        folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const filteredFiles = files.filter(file =>
         file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -262,20 +302,42 @@ const DivisionUserDashboard = () => {
     return (
         <div className="division-dashboard">
             <div className="dashboard-toolbar">
-                <h1>{user?.division?.name || 'File Divisi'}</h1>
+                <div>
+                    <div className="breadcrumbs">
+                        <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentFolderId(null); }}>{rootLabel}</span>
+                        {breadcrumbs.map((bc, idx) => (
+                            <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ folder_id: bc.id }); setCurrentFolderId(bc.id); }}>
+                                {' > '}{bc.name}
+                            </span>
+                        ))}
+                    </div>
+                    {currentFolderId !== null && currentFolder && (
+                        <h1>{currentFolder.name}</h1>
+                    )}
+                </div>
                 <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
                     <FaPlus size={14} /> <span>Tambah File</span>
                 </button>
             </div>
 
-            <div className="filter-bar">
-                <div className="view-toggle">
-                    <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''}>List</button>
-                    <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}>Grid</button>
+            
+            {/* Folder Section - Grid */}
+            <div className="folders-section">
+                <h2>Folders</h2>
+                <div className="folders-grid">
+                    {filteredFolders.map(folder => (
+                        <div key={`folder-${folder.id}`} className="folder-card" onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
+                            <FolderCard folder={folder} />
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            {viewMode === 'list' ? (
+            <hr />
+
+            {/* Files Section - List */}
+            <div className="files-section">
+                <h2>Files</h2>
                 <div className="file-table-container">
                     <table className="data-table">
                         <thead>
@@ -318,23 +380,10 @@ const DivisionUserDashboard = () => {
                         </tbody>
                     </table>
                 </div>
-            ) : (
-                <div className="stats-grid">
-                    {filteredFiles.map(file => (
-                        <FileCard 
-                            key={file.id} 
-                            file={file} 
-                            onPreview={handlePreview} 
-                            onDownload={handleDownload} 
-                            onDelete={handleDeleteClick} 
-                            onToggleFavorite={handleToggleFavorite} 
-                        />
-                    ))}
-                </div>
-            )}
+            </div>
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} />
+                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />
             </Modal>
             
             <ConfirmationModal
