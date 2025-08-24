@@ -6,14 +6,21 @@
     border-right: 1px solid #dee2e6;
     display: flex;
     flex-direction: column;
-    padding: 1rem 1rem;
+    padding: 1rem; /* Disederhanakan dari 1rem 1rem */
 }
 
 .sidebar-logo {
-    padding: 0 1rem 1.5rem 1rem;
+    padding: 1.5rem 0; /* Padding atas-bawah, 0 untuk kiri-kanan agar bisa center */
     margin-bottom: 1rem;
-    font-weight: bold;
-    font-size: 1.5rem;
+    display: flex;
+    justify-content: center; /* Menengahkan logo */
+}
+
+.sidebar-logo-img {
+    max-width: 100%;
+    width: 150px; /* Atur lebar logo sesuai kebutuhan */
+    height: auto;
+    display: block;
 }
 
 .sidebar-menu {
@@ -66,10 +73,4 @@
 .storage-text {
     font-size: 0.8rem;
     color: #6c757d;
-}
-
-.sidebar-logo-img {
-    max-width: 100%;
-    height: auto;
-    display: block; /* Remove extra space below image */
 }
