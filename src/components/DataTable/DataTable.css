@@ -38,3 +38,17 @@
 .data-table tbody tr:hover {
     background-color: #f9fafb;
 }
+
+.data-table tr.selected {
+    background-color: #8dc6ff; /* A light blue background */
+}
+
+.data-table tr.selected:hover {
+    background-color: #dcebff; /* A slightly darker blue on hover */
+}
+
+.data-table tr.selected,
+.data-table tr.selected:hover {
+    background-color: #b6cbe6 !important; /* light blue */
+    color: #1e40af !important; /* dark blue text */
+}

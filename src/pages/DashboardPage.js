@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { downloadFile, deleteFile, toggleFavorite, uploadFile } from '../services/api';
+import apiClient, { getFiles, downloadFile, deleteFile, toggleFavorite, uploadFile, renameFile } from '../services/api';
 import FolderCard from '../components/FolderCard/FolderCard';
 import { FaFolder } from 'react-icons/fa';
 import './DashboardView.css';
@@ -13,10 +13,11 @@ import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal
 import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
 import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
+import SortControls from '../components/SortControls/SortControls'; // Import SortControls
 
-
-
-import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave } from 'react-icons/fa';
+import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave, FaPencilAlt } from 'react-icons/fa';
+import getFileIcon from '../utils/fileIcons';
+import { truncateFilename } from '../utils/formatters';
 
 
 // --- Komponen Dashboard untuk Super Admin ---
@@ -107,6 +108,7 @@ const DivisionUserDashboard = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
+    const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
     const [notification, setNotification] = useState({ isOpen: false, message: '', type: '' });
     const [viewMode, setViewMode] = useState('list');
     const [previewFile, setPreviewFile] = useState(null);
@@ -114,8 +116,10 @@ const DivisionUserDashboard = () => {
 
     // State untuk modal overwrite dan rename
     const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
-    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null });
-    const [newName, setNewName] = useState('');
+    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '' });
+    const [sortBy, setSortBy] = useState('updated_at'); // Default sort by updated_at
+    const [sortOrder, setSortOrder] = useState('desc'); // Default sort order descending
+    const [selectedFileIds, setSelectedFileIds] = useState([]); // New state for selected file IDs
     const rootLabel = user?.division?.name ? `${user.division.name} Drive` : 'My Drive';
 
     const fetchFiles = React.useCallback(async () => {
@@ -225,14 +229,77 @@ const DivisionUserDashboard = () => {
     };
 
     const handleConflict = (file, message) => {
-        setNewName(file.name);
         setOverwriteModal({ isOpen: true, file: file, message: message });
         setIsUploadModalOpen(false); // Tutup modal upload
     };
 
-    const handleRename = () => {
-        setOverwriteModal({ isOpen: false, file: null, message: '' });
-        setRenameModal({ isOpen: true, file: overwriteModal.file });
+    const handleRenameClick = (file) => {
+        console.log('handleRenameClick - file:', file);
+        setRenameModal({ isOpen: true, file: file, newName: file.nama_file_asli });
+    };
+
+    const confirmRename = async () => {
+        if (!renameModal.file || !renameModal.newName) return;
+        console.log('confirmRename - fileId:', renameModal.file.id, 'newName:', renameModal.newName);
+        try {
+            const response = await renameFile(renameModal.file.id, renameModal.newName);
+            setFiles(currentFiles =>
+                currentFiles.map(f => (f.id === renameModal.file.id ? response.data.file : f))
+            );
+            setNotification({ isOpen: true, message: 'Nama file berhasil diubah.', type: 'success' });
+            setRenameModal({ isOpen: false, file: null, newName: '' });
+        } catch (error) {
+            const message = error.response?.data?.message || 'Gagal mengubah nama file.';
+            setNotification({ isOpen: true, message, type: 'error' });
+        }
+    };
+
+    const handleSortChange = (column, order) => {
+        setSortBy(column);
+        setSortOrder(order);
+    };
+
+    const handleFileSelect = (fileId) => {
+        setSelectedFileIds(prevSelected => {
+            if (prevSelected.includes(fileId)) {
+                return prevSelected.filter(id => id !== fileId);
+            } else {
+                return [...prevSelected, fileId];
+            }
+        });
+    };
+
+    const handleSelectAllClick = () => {
+        const allFileIds = sortedAndFilteredFiles.map(file => file.id);
+        setSelectedFileIds(allFileIds);
+    };
+
+    const handleBulkDownload = () => {
+        selectedFileIds.forEach(fileId => {
+            const fileToDownload = files.find(f => f.id === fileId);
+            if (fileToDownload) {
+                handleDownload(fileToDownload);
+            }
+        });
+    };
+
+    const handleBulkDelete = () => {
+        setIsBulkDeleteModalOpen(true);
+    };
+
+    const confirmBulkDelete = async () => {
+        const promises = selectedFileIds.map(id => deleteFile(id));
+        try {
+            await Promise.all(promises);
+            setNotification({ isOpen: true, message: `${selectedFileIds.length} file berhasil dipindahkan ke sampah.`, type: 'success' });
+            fetchFiles();
+            setSelectedFileIds([]);
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+            setNotification({ isOpen: true, message: 'Gagal menghapus beberapa file.', type: 'error' });
+        } finally {
+            setIsBulkDeleteModalOpen(false);
+        }
     };
 
     const executeUpload = async (file, options = {}) => {
@@ -264,7 +331,6 @@ const DivisionUserDashboard = () => {
             }
         } finally {
             setOverwriteModal({ isOpen: false, file: null, message: '' });
-            setRenameModal({ isOpen: false, file: null });
         }
     };
 
@@ -272,114 +338,139 @@ const DivisionUserDashboard = () => {
         executeUpload(overwriteModal.file, { overwrite: true });
     };
 
-    const confirmRename = () => {
-        if (!newName.trim()) {
-            setNotification({ isOpen: true, message: 'Nama file tidak boleh kosong.', type: 'error' });
-            return;
-        }
-        if (newName.trim() === renameModal.file.name) {
-            setNotification({ isOpen: true, message: 'Nama file masih sama, silahkan diubah kembali.', type: 'error' });
-            return;
-        }
-        executeUpload(renameModal.file, { newName: newName });
-    };
-
     const closeNotification = () => {
         setNotification({ isOpen: false, message: '', type: '' });
     };
 
-    const filteredFolders = folders.filter(folder =>
-        folder.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const filteredFiles = files.filter(file =>
-        file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const sortedAndFilteredFiles = files
+        .filter(file => file.nama_file_asli.toLowerCase().includes(searchQuery.toLowerCase()))
+        .sort((a, b) => {
+            let valA, valB;
+            if (sortBy === 'nama_file_asli') {
+                valA = a.nama_file_asli ? a.nama_file_asli.toLowerCase() : '';
+                valB = b.nama_file_asli ? b.nama_file_asli.toLowerCase() : '';
+            } else if (sortBy === 'uploader.name') {
+                valA = a.uploader ? a.uploader.name.toLowerCase() : '';
+                valB = b.uploader ? b.uploader.name.toLowerCase() : '';
+            } else if (sortBy === 'updated_at') {
+                valA = new Date(a.updated_at).getTime();
+                valB = new Date(b.updated_at).getTime();
+            }
+            if (valA < valB) {
+                return sortOrder === 'asc' ? -1 : 1;
+            }
+            if (valA > valB) {
+                return sortOrder === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
 
     if (authLoading) return <div>Loading user data...</div>;
     if (isFilesLoading) return <div>Loading files...</div>;
 
     return (
         <div className="division-dashboard">
-            <div className="dashboard-toolbar">
-                <div>
-                    <div className="breadcrumbs">
-                        <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentFolderId(null); }}>{rootLabel}</span>
-                        {breadcrumbs.map((bc, idx) => (
-                            <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ folder_id: bc.id }); setCurrentFolderId(bc.id); }}>
-                                {' > '}{bc.name}
-                            </span>
+            <div className="dashboard-content">
+                <div className="dashboard-toolbar">
+                    <h1>{user?.division?.name || 'File Divisi'}</h1>
+                    <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
+                        <FaPlus size={14} /> <span>Tambah File</span>
+                    </button>
+                </div>
+
+                <div className="controls-container">
+                    {selectedFileIds.length > 0 ? (
+                        <div className="action-toolbar">
+                            <button className="action-button" onClick={() => setSelectedFileIds([])}><FaTimes /> ({selectedFileIds.length} dipilih)</button>
+                            <button className="action-button" onClick={handleSelectAllClick}>Pilih Semua</button>
+                            <button className="action-button" onClick={handleBulkDownload} disabled={selectedFileIds.length === 0}><FaDownload /></button>
+                            <button className="action-button" onClick={handleBulkDelete} disabled={selectedFileIds.length === 0}><FaTrash /></button>
+                            {selectedFileIds.length === 1 && (
+                                <>
+                                    <button className="action-button" onClick={() => {
+                                        const fileToPreview = files.find(f => f.id === selectedFileIds[0]);
+                                        if (fileToPreview) {
+                                            handlePreview(fileToPreview);
+                                        }
+                                    }}><FaEye /></button>
+                                    <button className="action-button" onClick={() => {
+                                        const fileToRename = files.find(f => f.id === selectedFileIds[0]);
+                                        if (fileToRename) {
+                                            handleRenameClick(fileToRename);
+                                        } else {
+                                            // Opsional: tambahkan notifikasi atau log jika file tidak ditemukan
+                                            console.error('File yang ingin diganti namanya tidak ditemukan untuk ID:', selectedFileIds[0]);
+                                            setNotification({ isOpen: true, message: 'File yang ingin diganti namanya tidak ditemukan.', type: 'error' });
+                                        }
+                                    }}><FaPencilAlt /></button>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <SortControls sortBy={sortBy} sortOrder={sortOrder} onSortChange={handleSortChange} />
+                    )}
+                    <div className="filter-bar">
+                        <div className="view-toggle">
+                            <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''}>List</button>
+                            <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}>Grid</button>
+                        </div>
+                    </div>
+                </div>
+
+                {viewMode === 'list' ? (
+                    <div className="file-table-container">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th className="col-nama">Nama</th>
+                                    <th>Pemilik</th>
+                                    <th>Tanggal diubah</th>
+                                    <th>Ukuran file</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedAndFilteredFiles.map(file => (
+                                    <tr 
+                                        key={file.id} 
+                                        onClick={() => handleFileSelect(file.id)}
+                                        className={selectedFileIds.includes(file.id) ? 'selected' : ''}
+                                    >
+                                        <td className="nama-cell">
+                                            <button onClick={(e) => {e.stopPropagation(); handleToggleFavorite(file);}} className="action-button favorite-button" title="Favorite">
+                                                {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
+                                            </button>
+                                            <span className="file-icon">
+                                                {getFileIcon(file.tipe_file, file.nama_file_asli)}
+                                            </span>
+                                            <span title={file.nama_file_asli}>
+                                                {truncateFilename(file.nama_file_asli, 54)}
+                                            </span>
+                                        </td>
+                                        <td>{file.uploader ? file.uploader.name : '-'}</td>
+                                        <td>{new Date(file.updated_at).toLocaleDateString('id-ID')}</td>
+                                        <td>{(file.ukuran_file / 1024 / 1024).toFixed(2)} MB</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="stats-grid">
+                        {sortedAndFilteredFiles.map(file => (
+                            <FileCard 
+                                key={file.id} 
+                                file={file} 
+                                onPreview={handlePreview} 
+                                onDownload={handleDownload} 
+                                onDelete={handleDeleteClick} 
+                                onToggleFavorite={handleToggleFavorite} 
+                                onRename={handleRenameClick}
+                                onSelect={handleFileSelect}
+                                isSelected={selectedFileIds.includes(file.id)}
+                            />
                         ))}
                     </div>
-                    {currentFolderId !== null && currentFolder && (
-                        <h1>{currentFolder.name}</h1>
-                    )}
-                </div>
-                <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
-                    <FaPlus size={14} /> <span>Tambah File</span>
-                </button>
-            </div>
-
-            
-            {/* Folder Section - Grid */}
-            <div className="folders-section">
-                <h2>Folders</h2>
-                <div className="folders-grid">
-                    {filteredFolders.map(folder => (
-                        <div key={`folder-${folder.id}`} className="folder-card" onClick={() => { setSearchParams({ folder_id: folder.id }); setCurrentFolderId(folder.id); }}>
-                            <FolderCard folder={folder} />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <hr />
-
-            {/* Files Section - List */}
-            <div className="files-section">
-                <h2>Files</h2>
-                <div className="file-table-container">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Nama</th>
-                                <th>Pemilik</th>
-                                <th>Tanggal diubah</th>
-                                <th>Ukuran file</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredFiles.map(file => (
-                                <tr key={file.id}>
-                                    <td>
-                                        <button onClick={() => handleToggleFavorite(file)} className="action-button" title="Favorite">
-                                            {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
-                                        </button>
-                                    </td>
-                                    <td>
-                                        {file.nama_file_asli}
-                                    </td>
-                                    <td>{file.uploader ? file.uploader.name : '-'}</td>
-                                    <td>{new Date(file.updated_at).toLocaleDateString('id-ID')}</td>
-                                    <td>{(file.ukuran_file / 1024 / 1024).toFixed(2)} MB</td>
-                                    <td>
-                                        <button onClick={() => handlePreview(file)} className="action-button" title="Preview">
-                                            <FaEye color="#0dcaf0" />
-                                        </button>
-                                        <button onClick={() => handleDownload(file)} className="action-button" title="Download">
-                                            <FaDownload color="#0d6efd" />
-                                        </button>
-                                        <button onClick={() => handleDeleteClick(file)} className="action-button" title="Delete">
-                                            <FaTrash color="#dc3545" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                )}
             </div>
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
@@ -396,6 +487,15 @@ const DivisionUserDashboard = () => {
             />
 
             <ConfirmationModal
+                isOpen={isBulkDeleteModalOpen}
+                onClose={() => setIsBulkDeleteModalOpen(false)}
+                onConfirm={confirmBulkDelete}
+                message={`Apakah Anda yakin ingin menghapus ${selectedFileIds.length} file yang dipilih?`}
+                isDanger={true}
+                confirmText="Hapus Semua"
+            />
+
+            <ConfirmationModal
                 isOpen={overwriteModal.isOpen}
                 onClose={() => setOverwriteModal({ isOpen: false, file: null, message: '' })}
                 onConfirm={confirmOverwrite}
@@ -403,7 +503,10 @@ const DivisionUserDashboard = () => {
                 confirmText="Timpa"
                 isDanger={true}
                 customActions={
-                    <button onClick={handleRename} className="modal-button cancel-button">
+                    <button onClick={() => {
+                        handleRenameClick(overwriteModal.file);
+                        setOverwriteModal({ isOpen: false, file: null, message: '' });
+                    }} className="modal-button cancel-button">
                         Ganti Nama
                     </button>
                 }
@@ -411,23 +514,23 @@ const DivisionUserDashboard = () => {
 
             <Modal 
                 isOpen={renameModal.isOpen} 
-                onClose={() => setRenameModal({ isOpen: false, file: null })} 
-                title="Ganti Nama & Unggah"
+                onClose={() => setRenameModal({ ...renameModal, isOpen: false })} 
+                title="Ganti Nama File"
             >
                 <div>
-                    <p>Masukkan nama file baru:</p>
+                    <p>Masukkan nama file baru untuk "{renameModal.file?.nama_file_asli}":</p>
                     <input 
                         type="text" 
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
+                        value={renameModal.newName}
+                        onChange={(e) => setRenameModal({ ...renameModal, newName: e.target.value })}
                         className="form-input w-full mt-2"
                     />
                     <div className="confirmation-modal-actions">
-                        <button type="button" className="modal-button cancel-button" onClick={() => setRenameModal({ isOpen: false, file: null })}>
+                        <button type="button" className="modal-button cancel-button" onClick={() => setRenameModal({ ...renameModal, isOpen: false })}>
                             <FaTimes /> Batal
                         </button>
                         <button type="button" className="modal-button confirm-button" onClick={confirmRename}>
-                            <FaSave /> Simpan dengan Nama Baru
+                            <FaSave /> Simpan
                         </button>
                     </div>
                 </div>

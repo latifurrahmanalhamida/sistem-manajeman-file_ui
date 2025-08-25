@@ -1,50 +1,42 @@
 // src/components/FileCard/FileCard.js
 import React from 'react';
 import './FileCard.css';
-import { FaFilePdf, FaFileWord, FaFileExcel, FaFileImage, FaFileArchive, FaFile, FaDownload, FaTrash, FaStar, FaRegStar } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
+import { FaStar, FaRegStar } from 'react-icons/fa';
+import { truncateFilename } from '../../utils/formatters';
+import getFileIcon from '../../utils/fileIcons';
 
-const getFileIcon = (fileName) => {
-    const extension = fileName.split('.').pop().toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) return <FaFileImage size={40} color="#6c757d" />;
-    if (['pdf'].includes(extension)) return <FaFilePdf size={40} color="#dc3545" />;
-    if (['doc', 'docx'].includes(extension)) return <FaFileWord size={40} color="#0d6efd" />;
-    if (['xls', 'xlsx'].includes(extension)) return <FaFileExcel size={40} color="#198754" />;
-    if (['zip', 'rar', '7z'].includes(extension)) return <FaFileArchive size={40} color="#6c757d" />;
-    return <FaFile size={40} color="#6c757d" />;
-};
+const FileCard = ({ file, onPreview, onToggleFavorite, onSelect, isSelected }) => {
 
-const FileCard = ({ file, onPreview, onDownload, onDelete, onToggleFavorite }) => {
-    // Variabel user sekarang digunakan untuk otorisasi
-    const { user } = useAuth();
+    const handleCardClick = (e) => {
+        // Prevent card click from triggering when clicking on favorite button
+        if (e.target.closest('.favorite-button-grid')) {
+            return;
+        }
+        onSelect(file.id, !isSelected);
+    };
 
-    // Tentukan apakah tombol hapus boleh ditampilkan
-    const canDelete = 
-        user?.role?.name === 'super_admin' || 
-        user?.role?.name === 'admin_devisi' || 
-        user?.id === file.uploader_id;
+    const handlePreviewClick = (e) => {
+        // Allow preview and stop propagation to avoid selection
+        e.stopPropagation();
+        onPreview(file);
+    }
 
     return (
-        <div className="file-card">
-            <div className="file-card-icon" onClick={() => onPreview(file)}>
-                {getFileIcon(file.nama_file_asli)}
+        <div className={`file-card ${isSelected ? 'selected' : ''}`} onClick={handleCardClick}>
+            <div className="file-card-icon" onClick={handlePreviewClick}>
+                {getFileIcon(file.tipe_file, file.nama_file_asli, 50)}
             </div>
-            <p className="file-card-name" onClick={() => onPreview(file)}>
-                {file.nama_file_asli}
-            </p>
-            <div className="file-card-actions">
-                <button onClick={() => onToggleFavorite(file)} className="action-button" title="Favorite">
+            <div className="file-card-name-container">
+                <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(file); }} className="action-button favorite-button-grid" title="Favorite">
                     {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
                 </button>
-                <button onClick={() => onDownload(file)} className="action-button" title="Download">
-                    <FaDownload color="#0d6efd" />
-                </button>
-                {/* Tombol Hapus hanya muncul jika 'canDelete' bernilai true */}
-                {canDelete && (
-                    <button onClick={() => onDelete(file)} className="action-button" title="Delete">
-                        <FaTrash color="#dc3545" />
-                    </button>
-                )}
+                <p className="file-card-name" title={file.nama_file_asli}>
+                    {truncateFilename(file.nama_file_asli, 20)}
+                </p>
+            </div>
+            <div className="file-card-info">
+                <span>{new Date(file.updated_at).toLocaleDateString('id-ID')}</span>
+                <span>{(file.ukuran_file / 1024).toFixed(2)} KB</span>
             </div>
         </div>
     );
