@@ -1,7 +1,9 @@
 // src/pages/TrashPage.js
 
-import React, { useState, useEffect } from 'react';
-import { getTrashedFiles, restoreFile, forceDeleteFile } from '../services/api';
+import React, { useState, useEffect, useMemo } from 'react';
+import { getTrashedFiles, restoreFile, forceDeleteFile, getDivisions } from '../services/api';
+import FilterBar from '../components/FilterBar/FilterBar';
+import { useAuth } from '../context/AuthContext'; // Use useAuth hook
 import './DashboardView.css';
 import './TrashPage.css';
 
@@ -12,8 +14,15 @@ import Notification from '../components/Notification/Notification';
 import { FaTrash, FaUndo, FaSave, FaTimes } from 'react-icons/fa';
 
 const TrashPage = () => {
+    const { user } = useAuth(); // Get user from useAuth hook
+
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [fileType, setFileType] = useState('');
+    const [modifiedDate, setModifiedDate] = useState('');
+    const [ownerSearch, setOwnerSearch] = useState('');
+    const [divisions, setDivisions] = useState([]);
+    const [divisionFilter, setDivisionFilter] = useState('');
 
     // State untuk modal konfirmasi
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, file: null });
@@ -37,7 +46,73 @@ const TrashPage = () => {
 
     useEffect(() => {
         fetchTrashedFiles();
+        const fetchDivisionsData = async () => {
+            try {
+                const response = await getDivisions();
+                setDivisions(response.data);
+            } catch (error) {
+                console.error('Failed to fetch divisions:', error);
+            }
+        };
+        fetchDivisionsData();
     }, []);
+
+    const filteredFiles = useMemo(() => {
+        let currentFiles = [...files];
+
+        // Apply owner search filter
+        if (ownerSearch) {
+            currentFiles = currentFiles.filter(file =>
+                (file.uploader?.name ?? '').toLowerCase().includes(ownerSearch.toLowerCase())
+            );
+        }
+
+        // Apply file type filter
+        if (fileType) {
+            currentFiles = currentFiles.filter(file => {
+                const extension = file.nama_file_asli.split('.').pop().toLowerCase();
+                if (fileType === 'doc') return ['doc', 'docx'].includes(extension);
+                if (fileType === 'xls') return ['xls', 'xlsx'].includes(extension);
+                if (fileType === 'jpg') return ['jpg', 'jpeg'].includes(extension);
+                return extension === fileType;
+            });
+        }
+
+        // Apply modified date filter (using deleted_at as proxy for modification in trash)
+        if (modifiedDate) {
+            currentFiles = currentFiles.filter(file => {
+                const fileDate = new Date(file.deleted_at);
+                const now = new Date();
+                now.setHours(0, 0, 0, 0); // Normalize to start of day
+
+                if (modifiedDate === 'today') {
+                    return fileDate.toDateString() === now.toDateString();
+                } else if (modifiedDate === '7days') {
+                    const sevenDaysAgo = new Date(now);
+                    sevenDaysAgo.setDate(now.getDate() - 7);
+                    return fileDate >= sevenDaysAgo;
+                } else if (modifiedDate === '30days') {
+                    const thirtyDaysAgo = new Date(now);
+                    thirtyDaysAgo.setDate(now.getDate() - 30);
+                    return fileDate >= thirtyDaysAgo;
+                } else if (modifiedDate === '1year') {
+                    const oneYearAgo = new Date(now);
+                    oneYearAgo.setFullYear(now.getFullYear() - 1);
+                    return fileDate >= oneYearAgo;
+                }
+                return true;
+            });
+        }
+
+        // Apply division filter
+        if (divisionFilter) {
+            currentFiles = currentFiles.filter(file =>
+                file.division?.id === parseInt(divisionFilter)
+            );
+        }
+
+        return currentFiles;
+    }, [files, fileType, modifiedDate, ownerSearch, divisionFilter, divisions]); // Removed sort from dependency array
 
     const closeNotification = () => setNotification({ isOpen: false, message: '', type: '' });
 
@@ -109,6 +184,14 @@ const TrashPage = () => {
     return (
         <div className="division-dashboard">
             <div className="dashboard-toolbar"><h1>Sampah</h1></div>
+            <FilterBar
+                onFileTypeChange={setFileType}
+                onModifiedDateChange={setModifiedDate}
+                onOwnerSearch={setOwnerSearch}
+                userRole={user?.role?.id} // Pass user role ID
+                divisions={divisions}
+                onDivisionChange={setDivisionFilter}
+            />
             <div className="file-table-container">
                 <table className="data-table">
                     <thead>
@@ -120,7 +203,7 @@ const TrashPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {files.map(file => (
+                        {filteredFiles.map(file => (
                             <tr key={file.id}>
                                 <td>{file.nama_file_asli}</td>
                                 <td>{file.uploader.name}</td>
