@@ -1,10 +1,53 @@
+/* === Gaya Tabel Data yang Konsisten & Diperbaiki === */
+
+.table-wrapper {
+    width: 100%;
+    overflow-y: auto; /* Ini memungkinkan HANYA body tabel untuk scroll */
+    max-height: 75vh; /* Batasi tinggi tabel agar scrollbar muncul */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #ffffff; /* Pastikan ada latar belakang */
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse; /* Kunci agar border rapi dan kolom lurus */
+}
+
+/* Styling untuk Header Tabel (THEAD) */
+.data-table thead th {
+    position: sticky; /* KUNCI UTAMA: Membuat header 'lengket' di atas */
+    top: 0;
+    z-index: 10; /* Memastikan header selalu di atas konten lain */
+    background-color: #f8f9fa; /* Latar belakang solid untuk header (FIX BUG TUMPANG TINDIH) */
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Styling untuk Body Tabel (TBODY) */
+.data-table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #e9ecef; /* Garis pemisah antar baris */
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+/* Menghilangkan garis pemisah pada baris data terakhir */
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
 /* src/pages/DivisionDashboard.css */
 
 .dashboard-container, .division-dashboard {
     display: flex;
     flex-direction: column;
     height: 100%;
-    justify-content: center; /* Added for vertical centering */
+    /* justify-content: center;  Hapus agar konten tidak terlalu ke bawah */
+    /* overflow: auto; */
 }
 
 .dashboard-content {
@@ -170,8 +213,6 @@
     color: #6b7280;
     padding: 12px 15px;
     border-bottom: 2px solid #e5e7eb;
-    position: sticky;
-    top: 242.57px; /* Adjusted top position */
     background-color: #ffffff; /* To prevent content from showing through */
 }
 

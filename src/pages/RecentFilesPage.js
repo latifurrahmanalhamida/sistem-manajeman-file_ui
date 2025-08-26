@@ -15,7 +15,7 @@ const RecentFilesPage = () => {
             <div className="dashboard-toolbar">
                 <h1>File Terbaru (7 Hari Terakhir)</h1>
             </div>
-            <div className="file-table-container">
+            <div className="table-wrapper">
                 <table className="data-table">
                     <thead>
                         <tr>
@@ -29,7 +29,6 @@ const RecentFilesPage = () => {
                         {files.map(file => (
                             <tr key={file.id}>
                                 <td>{file.nama_file_asli}</td>
-                                {/* PERBAIKAN: Gunakan optional chaining (?.) dan nullish coalescing (??) */}
                                 <td>{file.uploader?.name ?? 'User Dihapus'}</td>
                                 <td>{file.division?.name ?? 'Tidak Ada Divisi'}</td>
                                 <td>{new Date(file.created_at).toLocaleDateString('id-ID')}</td>

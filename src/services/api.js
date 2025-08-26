@@ -47,6 +47,7 @@ export const forceDeleteUser = (userId) => {
 // Division & Role Management
 export const getRoles = () => apiClient.get('/admin/roles');
 export const getDivisions = () => apiClient.get('/admin/divisions');
+export const getDivisionsWithFolders = () => apiClient.get('/admin/divisions-with-folders');
 
 // File Management
 export const getFiles = () => apiClient.get('/files');

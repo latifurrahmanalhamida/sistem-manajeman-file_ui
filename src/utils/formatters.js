@@ -12,6 +12,7 @@ export const formatSize = (bytes) => {
 };
 
 export const truncateFilename = (filename, maxLength = 20, ellipsis = '...') => {
+    if (!filename || typeof filename !== 'string') return '';
     const parts = filename.split('.');
     const extension = parts.length > 1 ? '.' + parts.pop() : '';
     const name = parts.join('.');

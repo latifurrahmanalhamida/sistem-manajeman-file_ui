@@ -15,7 +15,7 @@ const FavoritesPage = () => {
             <div className="dashboard-toolbar">
                 <h1>File Favorit</h1>
             </div>
-            <div className="file-table-container">
+            <div className="table-wrapper">
                 <table className="data-table">
                     <thead>
                         <tr>
@@ -28,7 +28,6 @@ const FavoritesPage = () => {
                         {files.map(file => (
                             <tr key={file.id}>
                                 <td>{file.nama_file_asli}</td>
-                                {/* PERBAIKAN: Gunakan optional chaining (?.) dan nullish coalescing (??) */}
                                 <td>{file.uploader?.name ?? 'User Dihapus'}</td>
                                 <td>{file.division?.name ?? 'Tidak Ada Divisi'}</td>
                             </tr>

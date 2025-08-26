@@ -109,7 +109,7 @@ const TrashPage = () => {
     return (
         <div className="division-dashboard">
             <div className="dashboard-toolbar"><h1>Sampah</h1></div>
-            <div className="file-table-container">
+            <div className="table-wrapper">
                 <table className="data-table">
                     <thead>
                         <tr>

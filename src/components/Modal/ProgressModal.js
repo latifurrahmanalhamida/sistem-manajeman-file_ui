@@ -13,7 +13,7 @@ const ProgressModal = ({ isOpen, filesToUpload, onCancel, onClose }) => {
                     {filesToUpload.map((file, index) => (
                         <div key={file.id || index} className="upload-item">
                             <div className="file-info">
-                                <p className="file-name">{truncateFilename(file.name, 45)}</p>
+                                <p className="file-name">{truncateFilename(file.file?.name || '', 45)}</p>
                                 <p className="upload-size-info">
                                     {formatSize(file.uploadedBytes)} / {formatSize(file.totalBytes)}
                                 </p>
