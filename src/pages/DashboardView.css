@@ -1,16 +1,71 @@
+/* === Gaya Tabel Data yang Konsisten & Diperbaiki === */
+
+.table-wrapper {
+    width: 100%;
+    overflow-y: auto; /* Ini memungkinkan HANYA body tabel untuk scroll */
+    max-height: 75vh; /* Batasi tinggi tabel agar scrollbar muncul */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #ffffff; /* Pastikan ada latar belakang */
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse; /* Kunci agar border rapi dan kolom lurus */
+}
+
+/* Styling untuk Header Tabel (THEAD) */
+.data-table thead th {
+    position: sticky; /* KUNCI UTAMA: Membuat header 'lengket' di atas */
+    top: 0;
+    z-index: 10; /* Memastikan header selalu di atas konten lain */
+    background-color: #f8f9fa; /* Latar belakang solid untuk header (FIX BUG TUMPANG TINDIH) */
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Styling untuk Body Tabel (TBODY) */
+.data-table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #e9ecef; /* Garis pemisah antar baris */
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+/* Menghilangkan garis pemisah pada baris data terakhir */
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
 /* src/pages/DivisionDashboard.css */
 
 .dashboard-container, .division-dashboard {
-    padding: 1.5rem 2rem;
-    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    /* justify-content: center;  Hapus agar konten tidak terlalu ke bawah */
+    /* overflow: auto; */
+}
+
+.dashboard-content {
+    flex-grow: 1;
+    padding: 1rem 1rem; /* Adjusted padding */
+    background-color: #f9fafb;
 }
 
 .dashboard-header, .dashboard-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0; /* Adjusted */
+    position: sticky;
+    top: 66.4px; /* Adjusted top position */
+    z-index: 999;
+    background-color: #f9fafb;
+
 }
 
 .dashboard-header h1, .dashboard-toolbar h1 {
@@ -47,13 +102,37 @@
     margin: 0;
 }
 
-.dashboard-toolbar {
+/* Action Toolbar Styles */
+.action-toolbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    gap: 10px;
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
 }
 
+.action-toolbar .action-button {
+    background-color: white;
+    color: #495057;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.action-toolbar .action-button:hover {
+    background-color: #bcbcbcc9;
+}
+
+.action-toolbar .action-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Upload Button Styles */
 .upload-button {
     display: flex !important; /* Paksa display flex */
     align-items: center;
@@ -61,8 +140,6 @@
     flex-grow: 0 !important;  /* Paksa untuk tidak meregang */
     flex-shrink: 0 !important; /* Paksa untuk tidak menyusut */
     padding: 8px 16px !important; /* Paksa padding */
-
-    /* Style lainnya biarkan sama */
     gap: 8px;
     background-color: #F58220;
     color: white;
@@ -72,12 +149,12 @@
     font-weight: 600;
     white-space: nowrap;
 }
+
 .upload-button-wrapper {
     display: flex;
     justify-content: flex-end; /* Mendorong tombol ke kanan */
     margin-bottom: 1.5rem;
 }
-
 
 .upload-button:hover {
     background-color: #0b2242;
@@ -85,11 +162,11 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Filter Bar Styles */
 .filter-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
 }
 
 .filters {
@@ -117,6 +194,7 @@
     background-color: #e5e7eb;
 }
 
+/* Table Styles */
 .table-container {
     background-color: #ffffff;
     border-radius: 12px;
@@ -135,10 +213,11 @@
     color: #6b7280;
     padding: 12px 15px;
     border-bottom: 2px solid #e5e7eb;
+    background-color: #ffffff; /* To prevent content from showing through */
 }
 
-.data-table td {
-    padding: 15px;
+.data-table td { 
+    padding: 8px 15px; /* Further reduced padding */
     border-bottom: 1px solid #e5e7eb;
     font-size: 0.9rem;
 }
@@ -148,7 +227,7 @@
 }
 
 .data-table tbody tr:hover {
-    background-color: #f9fafb;
+    background-color: #f9fafbf0;
 }
 
 /* Breadcrumb styling: pointer cursor and hover effect */
@@ -159,15 +238,21 @@
     text-decoration: underline;
 }
 
+/* Action Button Styles (general) */
 .action-button {
     background: none;
-    border: 1px solid #d1d5db;
+    border: none; /* Remove border */
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 6px; /* Adjust padding */
     cursor: pointer;
     margin-right: 5px;
     transition: background-color 0.2s;
+    display: inline-flex; /* Use inline-flex for better alignment */
+    align-items: center;
+    justify-content: center;
+    color: #495057;
 }
+
 .action-button:hover {
     background-color: #e5e7eb;
 }
@@ -227,4 +312,103 @@
 /* Folder icon color override for folder cards */
 .folders-grid .folder-card .folder-icon {
     color: #FFCA28;
+}
+
+/* Table Specific Column Widths */
+.data-table .col-icon {
+    width: 50px;
+    text-align: center;
+}
+
+.data-table .col-nama {
+    width: 40%;
+}
+
+/* Nama Cell (File Name Column) Styles */
+.nama-cell {
+    display: flex;
+    align-items: center; /* Align items vertically */
+    gap: 8px;
+    line-height: 1; /* Reset line-height to default for flex container */
+}
+
+.nama-cell > span {
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove default padding */
+    line-height: 20px; /* Set line-height for the text to match icon height */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Prevent content from overflowing flex container */
+}
+
+/* Favorite Button Styles */
+.favorite-button {
+    margin-right: 5px; /* Jarak antara tombol favorit dan ikon file */
+    display: flex;
+    align-items: center;
+    padding: 0; /* Remove padding */
+    border: none; /* Remove border */
+    background: none; /* Remove background */
+}
+
+.favorite-button svg,
+.file-icon svg {
+    vertical-align: middle; /* Explicitly align SVG */
+}
+
+/* File Icon Styles */
+.file-icon {
+    margin-right: 8px; /* Jarak antara ikon file dan nama file */
+    display: flex; /* Corrected from align: flex */
+    align-items: center; /* Ensure content within file-icon is centered */
+    justify-content: center; /* Ensure content within file-icon is centered */
+    width: 20px; /* Adjusted icon width */
+    height: 20px; /* Adjusted icon height */
+}
+
+.file-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Action Cell Styles */
+.action-cell {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Jarak antar tombol aksi */
+}
+
+/* Rename Form List Styles */
+.rename-form-list {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rename-form-list input {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.rename-form-list button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0; /* Adjusted */
+    position: sticky;
+    top: 143.37px; /* Adjusted top position */
+    z-index: 998;
+    background-color: #f9fafb; /* Add background to prevent content from showing through */
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }

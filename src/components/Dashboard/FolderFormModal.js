@@ -25,13 +25,13 @@ const FolderFormModal = ({ isOpen, onClose, onSave, folderToEdit, parentId }) =>
     setIsSubmitting(true);
     setError(null);
 
-    const computedParentId = isEditMode
+    const computedParentFolderId = isEditMode
       ? (folderToEdit.parent_folder_id ?? folderToEdit.parent_id ?? null)
       : parentId;
 
     const folderData = {
       name,
-      parent_id: computedParentId,
+      parent_folder_id: computedParentFolderId,
     };
 
     try {

@@ -5,7 +5,8 @@
     border-radius: 8px;
     padding: 1.5rem; /* Padding diperbesar */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    overflow-x: auto; /* Tambahkan scroll horizontal jika perlu */
+    overflow: auto; /* Mengizinkan scroll horizontal dan vertikal */
+    max-height: 70vh; /* Batasi tinggi container agar bisa di-scroll */
 }
 
 /* --- STYLE BARU UNTUK FILTER --- */
@@ -36,6 +37,10 @@
 }
 
 .data-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #ffffff; /* Latar belakang solid */
     font-weight: 600; /* Dibuat lebih tebal */
     color: #495057;
     font-size: 0.9rem;
