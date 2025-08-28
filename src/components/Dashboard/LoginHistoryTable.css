@@ -1,0 +1,120 @@
+/* src/components/Dashboard/ActivityLogTable.css */
+
+/* Kontainer utama untuk tabel */
+.activity-log-table-container {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+}
+
+/* Membuat tabel responsif */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Styling utama tabel */
+.log-table {
+    width: 100%;
+    border-collapse: collapse; /* Menghilangkan spasi antar border */
+    font-size: 14px;
+}
+
+/* Styling untuk header tabel */
+.log-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+/* Styling untuk sel data di tabel */
+.log-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle; /* Konten di tengah secara vertikal */
+}
+
+/* Menghilangkan border di baris terakhir */
+.log-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Styling untuk kolom User Agent agar tidak terlalu panjang */
+.user-agent {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Styling untuk badge/label aksi */
+.action-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: capitalize;
+}
+
+/* Warna hijau untuk login */
+.action-badge.login {
+    background-color: #06dd38; /* Hijau */
+}
+
+/* Warna oranye untuk logout */
+.action-badge.logout {
+    background-color: #f02b24; /* Oranye */
+}
+
+/* Styling untuk kontrol paginasi */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.pagination-controls button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.pagination-controls button:hover {
+    background-color: #0056b3;
+}
+
+.pagination-controls button:disabled {
+    background-color: #c0c0c0;
+    cursor: not-allowed;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.form-select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}

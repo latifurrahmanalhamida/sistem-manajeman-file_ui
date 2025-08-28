@@ -11,7 +11,6 @@ const ManajemenPage = () => {
         <div className="manajemen-page">
             <h1>Manajemen Global</h1>
 
-            {/* --- BAGIAN INI DIPERBARUI --- */}
             <div className="manajemen-nav-tabs">
                 <NavLink to="/super-admin/manajemen/divisi" className="nav-tab">
                     Kelola Divisi
@@ -19,8 +18,11 @@ const ManajemenPage = () => {
                 <NavLink to="/super-admin/manajemen/pengguna" className="nav-tab">
                     Kelola Pengguna
                 </NavLink>
+                {/* --- TAMBAHKAN TOMBOL BARU DI SINI --- */}
+                <NavLink to="/super-admin/manajemen/login-history" className="nav-tab">
+                    Riwayat Login
+                </NavLink>
             </div>
-            {/* ----------------------------- */}
 
             <div className="log-container">
                 <h3>Log Aktivitas Terbaru</h3>
