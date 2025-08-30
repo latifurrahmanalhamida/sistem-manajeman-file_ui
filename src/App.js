@@ -20,9 +20,13 @@ import TrashPage from './pages/TrashPage';
 import EditUserPage from './pages/EditUserPage';
 import TrashUserPage from './pages/TrashUserPage';
 
+
 // --- IMPORT BARU UNTUK SUPER ADMIN ---
 import SuperAdminLayout from './components/Layout/SuperAdminLayout';
 import SuperAdminBeranda from './pages/SuperAdminBeranda';
+import SuperAdminPengaturanPage from './pages/SuperAdminPengaturanPage';
+// import SuperAdminBackupPage from './pages/SuperAdminPengaturanPage'; // 🚀 import baru
+import SuperAdminBackupPage from './pages/SuperAdminBackupPage';
 import ManajemenPage from './pages/ManajemenPage'; 
 import KelolaDivisiPage from './pages/KelolaDivisiPage';
 import KelolaPenggunaPage from './pages/KelolaPenggunaPage'; 
@@ -90,7 +94,9 @@ function App() {
                             <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
                             <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
                             {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
-                            <Route path="*" element={<Navigate to="beranda" replace />} />
+                            <Route path="pengaturan/backup" element={<SuperAdminBackupPage />} />
+                            <Route path="pengaturan" element={<SuperAdminPengaturanPage />} />
+
                         </Route>
                         
                         {/* Rute terproteksi untuk semua halaman utama lainnya */}
