@@ -116,7 +116,6 @@ const DivisionUserDashboard = () => {
     const [breadcrumbs, setBreadcrumbs] = useState([]);
     const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-        const [selectedFolderId, setSelectedFolderId] = useState(null); // Untuk dropdown folder tujuan upload
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
     const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
@@ -128,6 +127,7 @@ const DivisionUserDashboard = () => {
     // State untuk modal overwrite dan rename
     const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
     const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '' });
+    const [renameUploadModal, setRenameUploadModal] = useState({ isOpen: false, file: null, newName: '' });
     const [sortBy, setSortBy] = useState('updated_at'); // Default sort by updated_at
     const [sortOrder, setSortOrder] = useState('desc'); // Default sort order descending
     const [selectedFileIds, setSelectedFileIds] = useState([]); // New state for selected file IDs
@@ -350,13 +350,12 @@ const DivisionUserDashboard = () => {
                 console.error('Upload error:', err.response ? err.response.data : err.message);
                 setNotification({ isOpen: true, message: 'Gagal mengunggah file.', type: 'error' });
             }
-        } finally {
-            setOverwriteModal({ isOpen: false, file: null, message: '' });
         }
     };
 
     const confirmOverwrite = () => {
         executeUpload(overwriteModal.file, { overwrite: true });
+        setOverwriteModal({ isOpen: false, file: null, message: '' });
     };
 
     const closeNotification = () => {
@@ -554,7 +553,7 @@ const DivisionUserDashboard = () => {
                 isDanger={true}
                 customActions={
                     <button onClick={() => {
-                        handleRenameClick(overwriteModal.file);
+                        setRenameUploadModal({ isOpen: true, file: overwriteModal.file, newName: '' });
                         setOverwriteModal({ isOpen: false, file: null, message: '' });
                     }} className="modal-button cancel-button">
                         Ganti Nama
@@ -581,6 +580,34 @@ const DivisionUserDashboard = () => {
                         </button>
                         <button type="button" className="modal-button confirm-button" onClick={confirmRename}>
                             <FaSave /> Simpan
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal 
+                isOpen={renameUploadModal.isOpen} 
+                onClose={() => setRenameUploadModal({ ...renameUploadModal, isOpen: false })} 
+                title="Ganti Nama dan Upload"
+            >
+                <div>
+                    <p>File dengan nama ini sudah ada. Masukkan nama baru untuk mengunggah:</p>
+                    <input 
+                        type="text" 
+                        placeholder={`Nama asli: ${renameUploadModal.file?.name}`}
+                        value={renameUploadModal.newName}
+                        onChange={(e) => setRenameUploadModal({ ...renameUploadModal, newName: e.target.value })}
+                        className="form-input w-full mt-2"
+                    />
+                    <div className="confirmation-modal-actions">
+                        <button type="button" className="modal-button cancel-button" onClick={() => setRenameUploadModal({ ...renameUploadModal, isOpen: false })}>
+                            <FaTimes /> Batal
+                        </button>
+                        <button type="button" className="modal-button confirm-button" onClick={() => {
+                            executeUpload(renameUploadModal.file, { newName: renameUploadModal.newName });
+                            setRenameUploadModal({ isOpen: false, file: null, newName: '' });
+                        }}>
+                            <FaSave /> Simpan dan Upload
                         </button>
                     </div>
                 </div>
