@@ -91,10 +91,10 @@ const SuperAdminDashboard = () => {
             </Modal>
 
             {notification.isOpen && (
-                <Notification 
+                <Notification
                     message={notification.message}
                     type={notification.type}
-                    onClose={() => setNotification({ isOpen: false, message: '', type: '' })} 
+                    onClose={() => setNotification({ isOpen: false, message: '', type: '' })}
                 />
             )}
         </div>
@@ -116,7 +116,7 @@ const DivisionUserDashboard = () => {
     const [breadcrumbs, setBreadcrumbs] = useState([]);
     const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-        const [selectedFolderId, setSelectedFolderId] = useState(null); // Untuk dropdown folder tujuan upload
+    const [selectedFolderId, setSelectedFolderId] = useState(null); // Untuk dropdown folder tujuan upload
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
     const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
@@ -197,15 +197,45 @@ const DivisionUserDashboard = () => {
         }
     };
     
+    // --- FUNGSI BARU DIMASUKKAN DI SINI ---
     const handlePreview = async (file) => {
         try {
+            console.log(`Mencoba memuat pratinjau untuk file: ${file.nama_file_asli}`);
             const response = await downloadFile(file.id);
-            const fileUrl = window.URL.createObjectURL(new Blob([response.data], { type: file.tipe_file }));
+
+            // Defensive Check 1: Pastikan respons ada
+            if (!response) {
+                throw new Error("Tidak ada respons dari server.");
+            }
+
+            // Defensive Check 2: Pastikan respons berisi data biner (Blob)
+            if (!(response.data instanceof Blob)) {
+                 throw new Error("Server tidak mengembalikan data file. Kemungkinan terjadi error di backend.");
+            }
+
+            // Defensive Check 3: Pastikan blob tidak kosong
+            if (response.data.size === 0) {
+                throw new Error("Data file kosong atau tidak valid dari server.");
+            }
+            
+            console.log("Data file berhasil diterima, membuat URL sementara...");
+            const fileUrl = window.URL.createObjectURL(response.data);
+            
             setPreviewFile({ url: fileUrl, mime: file.tipe_file, name: file.nama_file_asli });
             setIsPreviewOpen(true);
+
         } catch (error) {
-            console.error('Preview error:', error.response ? error.response.data : error.message);
-            setNotification({ isOpen: true, message: 'Gagal memuat pratinjau.', type: 'error' });
+            // Tangani semua kemungkinan error di sini
+            console.error('GAGAL MEMUAT PRATINJAU:', error);
+            
+            let errorMessage = 'Gagal memuat data pratinjau. Silakan coba lagi.';
+            if (error.response) {
+                errorMessage = `Gagal memuat pratinjau: Server merespons dengan status ${error.response.status}.`;
+            } else {
+                errorMessage = `Gagal memuat pratinjau: ${error.message}`;
+            }
+
+            setNotification({ isOpen: true, message: errorMessage, type: 'error' });
         }
     };
 
@@ -216,6 +246,7 @@ const DivisionUserDashboard = () => {
         setIsPreviewOpen(false);
         setPreviewFile(null);
     };
+    // --- AKHIR DARI FUNGSI BARU ---
 
     const confirmDelete = async () => {
         if (!fileToDelete) return;
@@ -480,13 +511,13 @@ const DivisionUserDashboard = () => {
                             </thead>
                             <tbody>
                                 {sortedAndFilteredFiles.map(file => (
-                                    <tr 
-                                        key={file.id} 
+                                    <tr
+                                        key={file.id}
                                         onClick={() => handleFileSelect(file.id)}
                                         className={selectedFileIds.includes(file.id) ? 'selected' : ''}
                                     >
                                         <td className="nama-cell">
-                                            <button onClick={(e) => {e.stopPropagation(); handleToggleFavorite(file);}} className="action-button favorite-button" title="Favorite">
+                                            <button onClick={(e) => { e.stopPropagation(); handleToggleFavorite(file); }} className="action-button favorite-button" title="Favorite">
                                                 {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
                                             </button>
                                             <span className="file-icon">
@@ -507,13 +538,13 @@ const DivisionUserDashboard = () => {
                 ) : (
                     <div className="stats-grid">
                         {sortedAndFilteredFiles.map(file => (
-                            <FileCard 
-                                key={file.id} 
-                                file={file} 
-                                onPreview={handlePreview} 
-                                onDownload={handleDownload} 
-                                onDelete={handleDeleteClick} 
-                                onToggleFavorite={handleToggleFavorite} 
+                            <FileCard
+                                key={file.id}
+                                file={file}
+                                onPreview={handlePreview}
+                                onDownload={handleDownload}
+                                onDelete={handleDeleteClick}
+                                onToggleFavorite={handleToggleFavorite}
                                 onRename={handleRenameClick}
                                 onSelect={handleFileSelect}
                                 isSelected={selectedFileIds.includes(file.id)}
@@ -524,9 +555,9 @@ const DivisionUserDashboard = () => {
             </div>
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                    <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />
+                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />
             </Modal>
-            
+
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
@@ -562,15 +593,15 @@ const DivisionUserDashboard = () => {
                 }
             />
 
-            <Modal 
-                isOpen={renameModal.isOpen} 
-                onClose={() => setRenameModal({ ...renameModal, isOpen: false })} 
+            <Modal
+                isOpen={renameModal.isOpen}
+                onClose={() => setRenameModal({ ...renameModal, isOpen: false })}
                 title="Ganti Nama File"
             >
                 <div>
                     <p>Masukkan nama file baru untuk "{renameModal.file?.nama_file_asli}":</p>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         value={renameModal.newName}
                         onChange={(e) => setRenameModal({ ...renameModal, newName: e.target.value })}
                         className="form-input w-full mt-2"
@@ -587,14 +618,14 @@ const DivisionUserDashboard = () => {
             </Modal>
 
             {notification.isOpen && (
-                <Notification 
+                <Notification
                     message={notification.message}
                     type={notification.type}
-                    onClose={closeNotification} 
+                    onClose={closeNotification}
                 />
             )}
 
-           <FilePreviewModal
+            <FilePreviewModal
                 isOpen={isPreviewOpen}
                 onClose={closePreview}
                 fileUrl={previewFile?.url}
@@ -616,3 +647,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
