@@ -1,10 +1,11 @@
 // src/pages/KelolaFolderPage.js
 
-import React, { useState, useEffect } from 'react';
+// MODIFIKASI: Impor useCallback
+import React, { useState, useEffect, useCallback } from 'react'; 
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '../services/api';
 import './KelolaFolderPage.css';
-import { FaPlus, FaEdit, FaTrash, FaFolder } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaFolder, FaTrashRestore, FaArrowLeft } from 'react-icons/fa';
 import FolderFormModal from '../components/Dashboard/FolderFormModal';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
 import { useAuth } from '../context/AuthContext';
@@ -23,26 +24,34 @@ const KelolaFolderPage = () => {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // State untuk modal form (bisa untuk create/edit)
+  const [isTrashView, setIsTrashView] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [folderToEdit, setFolderToEdit] = useState(null);
-
-  // State untuk modal konfirmasi hapus
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [folderToDelete, setFolderToDelete] = useState(null);
-
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState(null);
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  
   const [searchParams, setSearchParams] = useSearchParams();
-  const [currentParentId, setCurrentParentId] = useState(null);
+  // MODIFIKASI: Kita tidak perlu state untuk currentParentId, cukup variabel biasa
+  const currentParentId = searchParams.get('parent_id') ? parseInt(searchParams.get('parent_id'), 10) : null;
   const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  const fetchFolders = async () => {
+  // MODIFIKASI: Bungkus fetchFolders dengan useCallback
+  const fetchFolders = useCallback(async () => {
     setLoading(true);
+    if (isTrashView) {
+      setBreadcrumbs([]);
+      // Tidak perlu setSearchParams({}) karena akan menyebabkan render berulang
+    }
+    
     try {
-      const parent_id = currentParentId ?? searchParams.get('parent_id');
-      const { data } = await apiClient.get('/admin/folders', { params: { parent_id } });
+      const parent_id = isTrashView ? undefined : currentParentId;
+      const endpoint = isTrashView ? '/admin/folders/trashed' : '/admin/folders';
+      
+      const { data } = await apiClient.get(endpoint, { params: { parent_id } });
       setFolders(data);
-      if (parent_id) {
+
+      if (parent_id && !isTrashView) {
         const { data: showData } = await apiClient.get(`/admin/folders/${parent_id}`);
         setBreadcrumbs(showData.breadcrumbs || []);
       } else {
@@ -54,26 +63,24 @@ const KelolaFolderPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isTrashView, currentParentId]); // <-- Dependensi untuk useCallback
 
+  // MODIFIKASI: useEffect sekarang jauh lebih sederhana dan aman
   useEffect(() => {
-    const pid = searchParams.get('parent_id');
-    setCurrentParentId(pid ? parseInt(pid, 10) : null);
     fetchFolders();
-  }, [searchParams]);
+  }, [fetchFolders]); // <-- Cukup fetchFolders sebagai dependensi
 
   const handleSave = () => {
-    fetchFolders(); // Refresh data setelah berhasil menyimpan
+    fetchFolders();
   };
 
-  // Handler untuk modal form
   const handleOpenCreateModal = () => {
-    setFolderToEdit(null); // Mode create
+    setFolderToEdit(null);
     setIsFormModalOpen(true);
   };
 
   const handleOpenEditModal = (folder) => {
-    setFolderToEdit(folder); // Mode edit
+    setFolderToEdit(folder);
     setIsFormModalOpen(true);
   };
 
@@ -81,49 +88,107 @@ const KelolaFolderPage = () => {
     setIsFormModalOpen(false);
     setFolderToEdit(null);
   };
-
-  // Handler untuk modal hapus
-  const handleDeleteClick = (folder) => {
-    setFolderToDelete(folder);
-    setIsDeleteModalOpen(true);
+  
+  const openConfirmationModal = (folder, action) => {
+    setSelectedFolder(folder);
+    setModalAction(action);
+    setIsConfirmModalOpen(true);
   };
 
-  const handleCloseDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setFolderToDelete(null);
+  const closeConfirmationModal = () => {
+    setIsConfirmModalOpen(false);
+    setSelectedFolder(null);
+    setModalAction(null);
   };
 
-  const confirmDelete = async () => {
-    if (!folderToDelete) return;
+  const handleConfirmAction = async () => {
+    if (!selectedFolder || !modalAction) return;
+
     try {
-      await apiClient.delete(`/admin/folders/${folderToDelete.id}`);
-      fetchFolders(); // Refresh data
+      switch (modalAction) {
+        case 'delete':
+          await apiClient.delete(`/admin/folders/${selectedFolder.id}`);
+          break;
+        case 'restore':
+          await apiClient.post(`/admin/folders/${selectedFolder.id}/restore`);
+          break;
+        case 'forceDelete':
+          await apiClient.delete(`/admin/folders/${selectedFolder.id}/force`);
+          break;
+        default:
+          return;
+      }
+      fetchFolders();
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menghapus folder.');
+      alert(err.response?.data?.message || `Gagal melakukan aksi: ${modalAction}`);
     } finally {
-      handleCloseDeleteModal();
+      closeConfirmationModal();
+    }
+  };
+  
+  const getModalDetails = () => {
+    if (!modalAction || !selectedFolder) return {};
+    switch(modalAction) {
+      case 'delete':
+        return {
+          message: `Apakah Anda yakin ingin memindahkan folder "${selectedFolder.name}" ke sampah?`,
+          isDanger: true,
+          confirmText: 'Ya, Pindahkan'
+        };
+      case 'restore':
+        return {
+          message: `Apakah Anda yakin ingin memulihkan folder "${selectedFolder.name}"?`,
+          isDanger: false,
+          confirmText: 'Ya, Pulihkan'
+        };
+      case 'forceDelete':
+        return {
+          message: `Apakah Anda yakin ingin menghapus folder "${selectedFolder.name}" secara permanen? Aksi ini tidak dapat dibatalkan.`,
+          isDanger: true,
+          confirmText: 'Ya, Hapus Permanen'
+        };
+      default:
+        return {};
     }
   };
 
   if (loading) return <div>Memuat data folder...</div>;
-  if (error) return <div className="error-message">{error}</div>
+  if (error) return <div className="error-message">{error}</div>;
+
+  const modalDetails = getModalDetails();
 
   return (
     <>
       <div className="kelola-folder-page">
         <div className="page-header">
           <div>
-            <div className="breadcrumbs">
-              <span className="breadcrumb-item" onClick={() => { setSearchParams({}); setCurrentParentId(null); }}>{user?.division?.name ? `${user.division.name} Drive` : 'My Drive'}</span>
-              {breadcrumbs.map(bc => (
-                <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ parent_id: bc.id }); setCurrentParentId(bc.id); }}>{' > '}{bc.name}</span>
-              ))}
-            </div>
-            <h1>Kelola Folder</h1>
+            {!isTrashView && (
+              <div className="breadcrumbs">
+                <span className="breadcrumb-item" onClick={() => { setSearchParams({}); }}>{user?.division?.name ? `${user.division.name} Drive` : 'My Drive'}</span>
+                {breadcrumbs.map(bc => (
+                  <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ parent_id: bc.id }); }}>{' > '}{bc.name}</span>
+                ))}
+              </div>
+            )}
+            <h1>{isTrashView ? 'Folder Sampah' : 'Kelola Folder'}</h1>
           </div>
-          <button className="btn btn-primary" onClick={handleOpenCreateModal}>
-            <FaPlus /> Tambah Folder
-          </button>
+          
+          <div className="button-group">
+            {isTrashView ? (
+              <button className="btn btn-secondary" onClick={() => setIsTrashView(false)}>
+                <FaArrowLeft /> Kembali ke Folder
+              </button>
+            ) : (
+              <>
+                <button className="btn btn-secondary" onClick={() => setIsTrashView(true)}>
+                  <FaTrash /> Lihat Sampah
+                </button>
+                <button className="btn btn-primary" onClick={handleOpenCreateModal}>
+                  <FaPlus /> Tambah Folder
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="table-wrapper">
@@ -132,35 +197,60 @@ const KelolaFolderPage = () => {
               <tr>
                 <th>Nama Folder</th>
                 <th>Dibuat Oleh</th>
-                <th>Tanggal Diubah</th>
+                <th>{isTrashView ? 'Tanggal Dihapus' : 'Tanggal Diubah'}</th>
                 <th>Ukuran Total</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {folders.map((folder) => (
-                <tr key={folder.id} onClick={() => { setSearchParams({ parent_id: folder.id }); setCurrentParentId(folder.id); }}>
+                <tr key={folder.id} onClick={() => {
+                  if (!isTrashView) {
+                    setSearchParams({ parent_id: folder.id });
+                  }
+                }}>
                   <td className="folder-name-cell">
                     <FaFolder /> <span>{folder.name}</span>
                   </td>
                   <td>{folder.user?.name || 'N/A'}</td>
-                  <td>{new Date(folder.updated_at).toLocaleDateString('id-ID')}</td>
+                  <td>{new Date(isTrashView ? folder.deleted_at : folder.updated_at).toLocaleDateString('id-ID')}</td>
                   <td>{formatBytes(folder.files_sum_ukuran_file)}</td>
                   <td className="action-buttons">
-                    <button
-                      className="btn-icon btn-edit"
-                      title="Ubah Nama"
-                      onClick={(e) => { e.stopPropagation(); handleOpenEditModal(folder); }}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="btn-icon btn-delete"
-                      title="Hapus"
-                      onClick={(e) => { e.stopPropagation(); handleDeleteClick(folder); }}
-                    >
-                      <FaTrash />
-                    </button>
+                    {isTrashView ? (
+                      <>
+                        <button
+                          className="btn-icon btn-restore"
+                          title="Pulihkan"
+                          onClick={(e) => { e.stopPropagation(); openConfirmationModal(folder, 'restore'); }}
+                        >
+                          <FaTrashRestore />
+                        </button>
+                        <button
+                          className="btn-icon btn-delete"
+                          title="Hapus Permanen"
+                          onClick={(e) => { e.stopPropagation(); openConfirmationModal(folder, 'forceDelete'); }}
+                        >
+                          <FaTrash />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="btn-icon btn-edit"
+                          title="Ubah Nama"
+                          onClick={(e) => { e.stopPropagation(); handleOpenEditModal(folder); }}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="btn-icon btn-delete"
+                          title="Pindahkan ke Sampah"
+                          onClick={(e) => { e.stopPropagation(); openConfirmationModal(folder, 'delete'); }}
+                        >
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -169,21 +259,23 @@ const KelolaFolderPage = () => {
         </div>
       </div>
 
-      <FolderFormModal
-        isOpen={isFormModalOpen}
-        onClose={handleCloseFormModal}
-        onSave={handleSave}
-        folderToEdit={folderToEdit}
-        parentId={currentParentId}
-      />
-
+      {!isTrashView && (
+        <FolderFormModal
+          isOpen={isFormModalOpen}
+          onClose={handleCloseFormModal}
+          onSave={handleSave}
+          folderToEdit={folderToEdit}
+          parentId={currentParentId}
+        />
+      )}
+      
       <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={confirmDelete}
-        message={`Apakah Anda yakin ingin menghapus folder "${folderToDelete?.name}"? Aksi ini akan menghapus semua file di dalamnya.`}
-        isDanger={true}
-        confirmText="Ya, Hapus"
+        isOpen={isConfirmModalOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={handleConfirmAction}
+        message={modalDetails.message}
+        isDanger={modalDetails.isDanger}
+        confirmText={modalDetails.confirmText}
       />
     </>
   );

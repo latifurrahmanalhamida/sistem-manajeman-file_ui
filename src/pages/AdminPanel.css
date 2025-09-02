@@ -22,7 +22,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: 10px;
 }
 
 .page-subtitle {
@@ -43,6 +43,7 @@
     display: flex;
     align-items: center; /* sejajar vertikal */
     gap: 16px; /* jarak antar elemen */
+    margin-top: 0; /* <-- TAMBAHKAN BARIS INI */
 }
 
 .controls-container a[title="Lihat User di Sampah"] {
@@ -127,3 +128,4 @@
 .form-button:hover {
     background-color: #e0701b;
 }
+
