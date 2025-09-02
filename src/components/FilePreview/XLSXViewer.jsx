@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
+// Menggunakan pustaka xlsx dan react-data-grid
 import * as XLSX from 'xlsx';
-import DataGrid from 'react-data-grid';
-import 'react-data-grid/lib/styles.css';
+import { DataGrid } from 'react-data-grid';
 
+/**
+ * Komponen untuk menampilkan pratinjau file XLSX dengan sheet selector.
+ */
 const XLSXViewer = ({ fileUrl }) => {
-  const [sheets, setSheets] = useState([]); // Format: { name: 'Sheet1', columns: [], rows: [] }
+  const [sheets, setSheets] = useState([]);
   const [activeSheetIndex, setActiveSheetIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAndParseXlsx = async () => {
       try {
-        setLoading(true);
         const response = await fetch(fileUrl);
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
@@ -23,12 +24,12 @@ const XLSXViewer = ({ fileUrl }) => {
           if (jsonData.length === 0) return { name: sheetName, columns: [], rows: [] };
 
           const columns = jsonData[0].map((header, index) => ({
-            key: `col_${index}`,
-            name: String(header),
+            key: `col${index}`,
+            name: String(header), // Pastikan header adalah string
           }));
 
-          const rows = jsonData.slice(1).map((rowData, rowIndex) => {
-            const rowObject = { id: rowIndex };
+          const rows = jsonData.slice(1).map(rowData => {
+            const rowObject = {};
             columns.forEach((col, index) => {
               rowObject[col.key] = rowData[index];
             });
@@ -39,33 +40,23 @@ const XLSXViewer = ({ fileUrl }) => {
         });
 
         setSheets(parsedSheets);
-        setActiveSheetIndex(0);
       } catch (error) {
-        console.error("Gagal mem-parsing XLSX:", error);
-      } finally {
-        setLoading(false);
+        console.error("Gagal mem-parsing file XLSX:", error);
       }
     };
 
-    if (fileUrl) {
-      fetchAndParseXlsx();
-    }
+    fetchAndParseXlsx();
   }, [fileUrl]);
 
-  if (loading) {
-    return <p>Memuat data spreadsheet...</p>;
-  }
-
   if (sheets.length === 0) {
-    return <p>Tidak ada data untuk ditampilkan.</p>;
+    return <p style={{ textAlign: 'center', paddingTop: '20px' }}>Memuat data spreadsheet...</p>;
   }
 
   const currentSheet = sheets[activeSheetIndex];
 
   return (
     <div>
-      <div className="sheet-selector" style={{ marginBottom: '10px', padding: '5px', background: '#f0f0f0', border: '1px solid #ccc' }}>
-        <strong>Pilih Sheet: </strong>
+      <div className="sheet-selector" style={{ marginBottom: '10px', padding: '5px', background: '#f0f0f0' }}>
         {sheets.map((sheet, index) => (
           <button
             key={sheet.name}
@@ -77,11 +68,10 @@ const XLSXViewer = ({ fileUrl }) => {
           </button>
         ))}
       </div>
-      <DataGrid 
-        columns={currentSheet.columns} 
-        rows={currentSheet.rows} 
+      <DataGrid
+        columns={currentSheet.columns}
+        rows={currentSheet.rows}
         style={{ height: '75vh' }}
-        className="rdg-light"
       />
     </div>
   );

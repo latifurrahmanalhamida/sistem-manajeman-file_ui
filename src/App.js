@@ -1,6 +1,7 @@
 // src/App.js
 
 import React from 'react';
+import 'react-data-grid/lib/styles.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';

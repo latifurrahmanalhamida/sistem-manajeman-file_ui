@@ -1,47 +1,40 @@
 import React, { useEffect, useRef } from 'react';
+// Menggunakan pustaka docx-preview
 import { renderAsync } from 'docx-preview';
 
+/**
+ * Komponen untuk menampilkan pratinjau file DOCX secara aman di browser.
+ */
 const DOCXViewer = ({ fileUrl }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const fetchAndRenderDocx = async () => {
-      try {
-        // Ambil data file dari blob URL
-        const response = await fetch(fileUrl);
-        const fileBlob = await response.blob();
-        
-        // Render file di dalam div target
-        if (containerRef.current) {
-          // Kosongkan kontainer sebelum merender
-          containerRef.current.innerHTML = "";
-          renderAsync(fileBlob, containerRef.current);
-        }
-      } catch (error) {
-        console.error("Gagal merender DOCX:", error);
-      }
-    };
-
-    if (fileUrl) {
-      fetchAndRenderDocx();
+    if (containerRef.current && fileUrl) {
+      // Ambil data file sebagai blob
+      fetch(fileUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          // Render blob di dalam container div
+          renderAsync(blob, containerRef.current)
+            .then(res => console.log("Pratinjau DOCX berhasil dirender."))
+            .catch(err => console.error("Gagal merender DOCX:", err));
+        })
+        .catch(err => console.error("Gagal mengambil file DOCX:", err));
     }
-  }, [fileUrl]);
+  }, [fileUrl]); // Efek ini akan berjalan saat fileUrl berubah
 
   return (
-    // Style kontainer agar bisa di-scroll
-    <div 
-      ref={containerRef} 
-      style={{ 
-        width: '100%', 
-        height: '80vh', 
-        overflowY: 'auto', 
-        border: '1px solid #ccc', 
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '80vh',
+        overflowY: 'auto',
+        border: '1px solid #ccc',
         padding: '20px',
         backgroundColor: 'white'
-      }} 
-    >
-      <p>Memuat pratinjau DOCX...</p>
-    </div>
+      }}
+    />
   );
 };
 
