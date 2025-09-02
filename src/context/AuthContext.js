@@ -1,7 +1,13 @@
 // src/context/AuthContext.js
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, logoutUser, getUser } from '../services/api';
+import { 
+    loginUser, 
+    logoutUser, 
+    getUser, 
+    recordFailedLoginAttempt, 
+    clearLoginAttempts 
+} from '../services/api';
 import apiClient from '../services/api';
 
 const AuthContext = createContext(null);
@@ -32,15 +38,13 @@ export const AuthProvider = ({ children }) => {
         bootstrapAuth();
     }, []);
 
-    // ===== PERUBAHAN ADA DI SINI =====
-    const login = async (loginInput, password) => { 
+    const login = async (loginInput, password) => {
         try {
-            // Mengirim data ke backend dengan kunci 'login' agar sesuai dengan AuthController
-            const response = await loginUser({ 
-                login: loginInput, 
-                password: password 
+            const response = await loginUser({
+                login: loginInput,
+                password: password
             });
-            
+
             const { access_token, user: userData } = response.data;
 
             localStorage.setItem('authToken', access_token);
@@ -48,15 +52,39 @@ export const AuthProvider = ({ children }) => {
 
             setToken(access_token);
             setUser(userData);
-            
-            // Set header default untuk permintaan selanjutnya setelah login berhasil
+
             apiClient.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
 
+            // Hapus catatan percobaan login yang gagal jika berhasil
+            clearLoginAttempts();
+
         } catch (error) {
-            throw error;
+            // Di sini kita menangani error dari server
+            if (error.response) {
+                const status = error.response.status;
+                const message = error.response.data.message || 'Terjadi kesalahan';
+
+                if (status === 429) {
+                    // Error "Too Many Requests" dari throttle middleware
+                    throw new Error('Terlalu banyak percobaan. Silakan coba lagi setelah 5 menit.');
+                }
+
+                if (status === 401) {
+                    // Error "Unauthorized" (password salah atau NIPP/email tidak ada)
+                    // Catat percobaan yang gagal
+                    recordFailedLoginAttempt();
+                    throw new Error(message); // 'Password yang Anda masukkan salah.' atau 'Email atau NIPP tidak terdaftar.'
+                }
+
+                if (status === 422) {
+                    // Error validasi dari Laravel
+                    throw new Error('NIPP/Email atau Password tidak boleh kosong.');
+                }
+            }
+            // Error lain (misal: masalah jaringan)
+            throw new Error('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
         }
     };
-    // ===== AKHIR PERUBAHAN =====
 
     const logout = async () => {
         try {

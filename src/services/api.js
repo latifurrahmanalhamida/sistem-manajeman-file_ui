@@ -83,4 +83,103 @@ export const restoreFile = (fileId, options = {}) => {
 export const forceDeleteFile = (fileId) => apiClient.delete(`/files/${fileId}/force`);
 export const renameFile = (fileId, newName) => apiClient.put(`/files/${fileId}/rename`, { new_name: newName });
 
+// --- LOGIKA UNTUK BLOKIR LOGIN & SESSION TIMEOUT ---
+// Catatan: Logika ini disediakan sebagai fungsi utilitas. Anda perlu mengintegrasikannya
+// ke dalam komponen React Anda (misalnya, halaman Login, App.js, atau Context).
+
+const MAX_LOGIN_ATTEMPTS = 3;
+const LOGIN_LOCKOUT_TIME = 5 * 60 * 1000; // 5 menit
+
+/**
+ * Memeriksa apakah pengguna saat ini diblokir untuk mencoba login.
+ * @returns {{isLocked: boolean, remainingTime: number}} - Mengembalikan status blokir dan sisa waktu dalam milidetik.
+ * Cara Penggunaan: Panggil di halaman login Anda sebelum mencoba login.
+ */
+export const checkLoginLockout = () => {
+    const lockoutUntil = localStorage.getItem('lockoutUntil');
+    if (!lockoutUntil) {
+        return { isLocked: false, remainingTime: 0 };
+    }
+
+    const remainingTime = parseInt(lockoutUntil, 10) - Date.now();
+    if (remainingTime > 0) {
+        return { isLocked: true, remainingTime };
+    }
+
+    localStorage.removeItem('loginAttempts');
+    localStorage.removeItem('lockoutUntil');
+    return { isLocked: false, remainingTime: 0 };
+};
+
+/**
+ * Mencatat percobaan login yang gagal. Jika percobaan melebihi batas,
+ * fungsi ini akan memblokir login selama waktu yang ditentukan.
+ * Cara Penggunaan: Panggil di blok .catch() dari fungsi login Anda ketika API mengembalikan error password salah.
+ */
+export const recordFailedLoginAttempt = () => {
+    const { isLocked } = checkLoginLockout();
+    if (isLocked) {
+        return; // Sudah dalam masa blokir
+    }
+
+    let attempts = parseInt(localStorage.getItem('loginAttempts') || '0', 10);
+    attempts += 1;
+    localStorage.setItem('loginAttempts', attempts.toString());
+
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
+        const lockoutUntil = Date.now() + LOGIN_LOCKOUT_TIME;
+        localStorage.setItem('lockoutUntil', lockoutUntil.toString());
+    }
+};
+
+/**
+ * Menghapus catatan percobaan login yang gagal.
+ * Cara Penggunaan: Panggil fungsi ini saat login berhasil.
+ */
+export const clearLoginAttempts = () => {
+    localStorage.removeItem('loginAttempts');
+    localStorage.removeItem('lockoutUntil');
+};
+
+
+// --- LOGIKA UNTUK SESSION INACTIVITY TIMEOUT ---
+
+let inactivityTimer;
+let warningTimer;
+
+const INACTIVITY_LOGOUT_TIME = 15 * 60 * 1000; // 15 menit
+const INACTIVITY_WARNING_TIME = 14 * 60 * 1000; // Peringatan pada 14 menit
+
+/**
+ * Memulai timer untuk memantau inaktivitas pengguna.
+ * Cara Penggunaan: Panggil ini setelah pengguna berhasil login.
+ * @param {function} onTimeout - Callback untuk logout (misalnya, membersihkan state, redirect ke /login).
+ * @param {function} onWarning - Callback untuk menampilkan peringatan (misalnya, menampilkan modal).
+ */
+export const startInactivityTimer = (onTimeout, onWarning) => {
+    clearTimeout(warningTimer);
+    clearTimeout(inactivityTimer);
+
+    warningTimer = setTimeout(onWarning, INACTIVITY_WARNING_TIME);
+    inactivityTimer = setTimeout(onTimeout, INACTIVITY_LOGOUT_TIME);
+};
+
+/**
+ * Mereset timer inaktivitas.
+ * Cara Penggunaan: Panggil fungsi ini dari event listener global (untuk klik, keypress, dll.) di App.js.
+ * Anda harus meneruskan kembali fungsi onTimeout dan onWarning yang sama.
+ */
+export const resetInactivityTimer = (onTimeout, onWarning) => {
+    startInactivityTimer(onTimeout, onWarning);
+};
+
+/**
+ * Menghentikan timer inaktivitas.
+ * Cara Penggunaan: Panggil saat pengguna logout secara manual.
+ */
+export const stopInactivityTimer = () => {
+    clearTimeout(warningTimer);
+    clearTimeout(inactivityTimer);
+};
+
 export default apiClient;
