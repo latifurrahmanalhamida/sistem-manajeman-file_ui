@@ -1,12 +1,11 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
-// PERUBAHAN: Impor file CSS yang baru
 import '../Sidebar/Sidebar.css'; 
-import { FaHome, FaUsers, FaCog, FaArrowLeft } from 'react-icons/fa';
+// BARU: Impor ikon folder
+import { FaHome, FaUsers, FaCog, FaArrowLeft, FaFolder } from 'react-icons/fa';
 
 const SuperAdminSidebar = () => {
     return (
-        // PERUBAHAN: Ganti className menjadi 'sidebar'
         <aside className="sidebar">
             <div>
                 <div className="sidebar-header">
@@ -18,6 +17,9 @@ const SuperAdminSidebar = () => {
                     </NavLink>
                     <NavLink to="/super-admin/manajemen" className="sidebar-link">
                         <FaUsers /> Manajemen
+                    </NavLink>
+                    <NavLink to="/super-admin/kelola-folder-divisi" className="sidebar-link">
+                        <FaFolder /> Kelola Folder Divisi
                     </NavLink>
                     <NavLink to="/super-admin/pengaturan" className="sidebar-link">
                         <FaCog /> Pengaturan

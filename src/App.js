@@ -30,6 +30,7 @@ import KelolaPenggunaPage from './pages/KelolaPenggunaPage';
 import KelolaPenggunaSampahPage from './pages/KelolaPenggunaSampahPage'; 
 
 import LoginHistoryPage from './pages/LoginHistoryPage';
+import PilihDivisiPage from './pages/PilihDivisiPage'; 
 // import PengaturanPage from './pages/PengaturanPage'; 
 
 // --- Komponen untuk rute Panel Admin Devisi (Tidak berubah) ---
@@ -95,6 +96,8 @@ function App() {
                             <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
                             {/* --- TAMBAHKAN RUTE BARU DI SINI --- */}
                             <Route path="manajemen/login-history" element={<LoginHistoryPage />} />
+                            <Route path="kelola-folder-divisi" element={<PilihDivisiPage />} />
+                            <Route path="kelola-folder/divisi/:divisionId" element={<KelolaFolderPage />} />
                             
                             <Route path="*" element={<Navigate to="beranda" replace />} />
                         </Route>

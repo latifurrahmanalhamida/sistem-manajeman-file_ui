@@ -1,8 +1,7 @@
 // src/pages/KelolaFolderPage.js
 
-// MODIFIKASI: Impor useCallback
 import React, { useState, useEffect, useCallback } from 'react'; 
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom'; 
 import apiClient from '../services/api';
 import './KelolaFolderPage.css';
 import { FaPlus, FaEdit, FaTrash, FaFolder, FaTrashRestore, FaArrowLeft } from 'react-icons/fa';
@@ -20,6 +19,7 @@ const formatBytes = (bytes, decimals = 2) => {
 };
 
 const KelolaFolderPage = () => {
+  const { divisionId } = useParams(); 
   const { user } = useAuth();
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,24 +35,37 @@ const KelolaFolderPage = () => {
   // MODIFIKASI: Kita tidak perlu state untuk currentParentId, cukup variabel biasa
   const currentParentId = searchParams.get('parent_id') ? parseInt(searchParams.get('parent_id'), 10) : null;
   const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [divisionName, setDivisionName] = useState('');
 
-  // MODIFIKASI: Bungkus fetchFolders dengan useCallback
-  const fetchFolders = useCallback(async () => {
+const fetchFolders = useCallback(async () => {
     setLoading(true);
     if (isTrashView) {
       setBreadcrumbs([]);
-      // Tidak perlu setSearchParams({}) karena akan menyebabkan render berulang
     }
     
     try {
-      const parent_id = isTrashView ? undefined : currentParentId;
+      // Siapkan parameter untuk panggilan API
+      const params = {
+        parent_id: isTrashView ? undefined : currentParentId,
+      };
+
+      // Jika yang membuka adalah super_admin, tambahkan division_id ke parameter
+      if (user.role.name === 'super_admin' && divisionId) {
+        params.division_id = divisionId;
+
+        // Ambil juga nama divisi untuk ditampilkan di judul jika belum ada
+        if (!divisionName) {
+            const divResponse = await apiClient.get(`/admin/divisions/${divisionId}`);
+            setDivisionName(divResponse.data.name);
+        }
+      }
+
       const endpoint = isTrashView ? '/admin/folders/trashed' : '/admin/folders';
-      
-      const { data } = await apiClient.get(endpoint, { params: { parent_id } });
+      const { data } = await apiClient.get(endpoint, { params });
       setFolders(data);
 
-      if (parent_id && !isTrashView) {
-        const { data: showData } = await apiClient.get(`/admin/folders/${parent_id}`);
+      if (params.parent_id && !isTrashView) {
+        const { data: showData } = await apiClient.get(`/admin/folders/${params.parent_id}`);
         setBreadcrumbs(showData.breadcrumbs || []);
       } else {
         setBreadcrumbs([]);
@@ -63,7 +76,8 @@ const KelolaFolderPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [isTrashView, currentParentId]); // <-- Dependensi untuk useCallback
+    // MODIFIKASI: Tambahkan dependensi baru di sini
+  }, [isTrashView, currentParentId, user, divisionId, divisionName]);
 
   // MODIFIKASI: useEffect sekarang jauh lebih sederhana dan aman
   useEffect(() => {
@@ -126,6 +140,9 @@ const KelolaFolderPage = () => {
     }
   };
   
+
+  const pageTitle = user.role.name === 'super_admin' ? `Kelola Folder: ${divisionName}` : 'Kelola Folder';
+  const breadcrumbBase = user.role.name === 'super_admin' ? divisionName : (user?.division?.name ? `${user.division.name} Drive` : 'My Drive');
   const getModalDetails = () => {
     if (!modalAction || !selectedFolder) return {};
     switch(modalAction) {
@@ -164,13 +181,13 @@ const KelolaFolderPage = () => {
           <div>
             {!isTrashView && (
               <div className="breadcrumbs">
-                <span className="breadcrumb-item" onClick={() => { setSearchParams({}); }}>{user?.division?.name ? `${user.division.name} Drive` : 'My Drive'}</span>
+                <span className="breadcrumb-item" onClick={() => { setSearchParams({}); }}>{breadcrumbBase}</span>
                 {breadcrumbs.map(bc => (
                   <span key={bc.id} className="breadcrumb-item" onClick={() => { setSearchParams({ parent_id: bc.id }); }}>{' > '}{bc.name}</span>
                 ))}
               </div>
             )}
-            <h1>{isTrashView ? 'Folder Sampah' : 'Kelola Folder'}</h1>
+            <h1>{isTrashView ? `Sampah: ${divisionName}` : pageTitle}</h1>
           </div>
           
           <div className="button-group">
@@ -260,13 +277,15 @@ const KelolaFolderPage = () => {
       </div>
 
       {!isTrashView && (
-        <FolderFormModal
-          isOpen={isFormModalOpen}
-          onClose={handleCloseFormModal}
-          onSave={handleSave}
-          folderToEdit={folderToEdit}
-          parentId={currentParentId}
-        />
+      <FolderFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleCloseFormModal}
+        onSave={handleSave}
+        folderToEdit={folderToEdit}
+        parentId={currentParentId}
+        // BARU: Kirim divisionId ke modal jika user adalah super_admin
+        divisionId={user.role.name === 'super_admin' ? divisionId : null}
+      />
       )}
       
       <ConfirmationModal
