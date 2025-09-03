@@ -10,4 +10,7 @@ const FilePreviewModal = ({ isOpen, onClose, fileUrl, mimeType }) => {
   );
 };
 
+
 export default FilePreviewModal;
+
+

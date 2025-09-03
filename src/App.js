@@ -1,8 +1,9 @@
 // src/App.js
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import 'react-data-grid/lib/styles.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 
 // --- Impor Komponen & Halaman Utama ---
@@ -28,12 +29,81 @@ import ManajemenPage from './pages/ManajemenPage';
 import KelolaDivisiPage from './pages/KelolaDivisiPage';
 import KelolaPenggunaPage from './pages/KelolaPenggunaPage'; 
 import KelolaPenggunaSampahPage from './pages/KelolaPenggunaSampahPage'; 
-
 import LoginHistoryPage from './pages/LoginHistoryPage';
 import PilihDivisiPage from './pages/PilihDivisiPage'; 
 // import PengaturanPage from './pages/PengaturanPage'; 
 
-// --- Komponen untuk rute Panel Admin Devisi (Tidak berubah) ---
+// --- Komponen Modal Peringatan Inaktivitas ---
+const InactivityWarningModal = ({ show, onDismiss }) => {
+    if (!show) return null;
+
+    const modalOverlayStyle = {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    };
+    const modalContentStyle = {
+        backgroundColor: '#fff',
+        padding: '20px 40px',
+        borderRadius: '8px',
+        textAlign: 'center',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    };
+    const buttonStyle = {
+        marginTop: '20px',
+        padding: '10px 20px',
+        cursor: 'pointer',
+        border: 'none',
+        borderRadius: '5px',
+        backgroundColor: '#007bff',
+        color: 'white',
+        fontSize: '16px',
+    };
+
+    return (
+        <div style={modalOverlayStyle}>
+            <div style={modalContentStyle}>
+                <h3>Sesi Akan Berakhir</h3>
+                <p>Sesi Anda akan berakhir dalam waktu kurang dari 1 menit karena tidak ada aktivitas.</p>
+                <p>Klik tombol di bawah untuk tetap login.</p>
+                <button onClick={onDismiss} style={buttonStyle}>Tetap Login</button>
+            </div>
+        </div>
+    );
+};
+
+// --- Wrapper untuk menangani logika global ---
+const AppLogicWrapper = ({ children }) => {
+    const { user, resetActivityTimer, inactivityWarning, dismissInactivityWarning } = useAuth();
+
+    useEffect(() => {
+        const events = ['click', 'keydown', 'mousemove', 'scroll'];
+
+        const handleActivity = () => {
+            if (user) resetActivityTimer();
+        };
+
+        if (user) events.forEach(event => window.addEventListener(event, handleActivity));
+
+        return () => events.forEach(event => window.removeEventListener(event, handleActivity));
+    }, [user, resetActivityTimer]);
+
+    return (
+        <>
+            <InactivityWarningModal show={inactivityWarning} onDismiss={dismissInactivityWarning} />
+            {children}
+        </>
+    );
+};
+
+// --- Komponen untuk rute Panel Admin Devisi ---
 const AdminPanelRoutes = () => (
     <AdminPanelLayout title="Panel Admin">
         <Routes>
@@ -47,7 +117,7 @@ const AdminPanelRoutes = () => (
     </AdminPanelLayout>
 );
 
-// --- Komponen untuk rute utama aplikasi (Tidak berubah) ---
+// --- Komponen untuk rute utama aplikasi ---
 const MainRoutes = () => (
     <AppLayout>
         <Routes>
@@ -61,50 +131,47 @@ const MainRoutes = () => (
     </AppLayout>
 );
 
-// --- Komponen Utama App (Struktur routing diperbarui) ---
+// --- Komponen Utama App ---
 function App() {
     return (
-        <AppProvider> 
+        <AppProvider>
             <AuthProvider>
                 <Router>
-                    <Routes>
-                        {/* Rute publik */}
-                        <Route path="/login" element={<LoginPage />} />
-                        
-                        {/* Rute terproteksi untuk Panel Admin Devisi (Tidak berubah) */}
-                        <Route path="/panel-admin/*" element={
-                            <ProtectedRoute allowedRoles={['admin_devisi']}>
-                                <AdminPanelRoutes />
-                            </ProtectedRoute>
-                        } />
-                        
-                        {/* RUTE SUPER ADMIN YANG DIPERBAIKI */}
-                        <Route 
-                            path="/super-admin"
-                            element={
+                    <AppLogicWrapper>
+                        <Routes>
+                            {/* Rute publik */}
+                            <Route path="/login" element={<LoginPage />} />
+
+                            {/* Rute terproteksi untuk Panel Admin Devisi */}
+                            <Route path="/panel-admin/*" element={
+                                <ProtectedRoute allowedRoles={['admin_devisi']}>
+                                    <AdminPanelRoutes />
+                                </ProtectedRoute>
+                            } />
+
+                            {/* RUTE SUPER ADMIN */}
+                            <Route path="/super-admin" element={
                                 <ProtectedRoute allowedRoles={['super_admin']}>
                                     <SuperAdminLayout />
                                 </ProtectedRoute>
-                            }
-                        >
-                            {/* Rute nested didefinisikan sebagai children di sini */}
-                            <Route index element={<Navigate to="beranda" replace />} />
-                            <Route path="beranda" element={<SuperAdminBeranda />} />
-                            <Route path="manajemen" element={<ManajemenPage />} />
-                            <Route path="manajemen/divisi" element={<KelolaDivisiPage />} />
-                            <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
-                            <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
-                            {/* --- TAMBAHKAN RUTE BARU DI SINI --- */}
-                            <Route path="manajemen/login-history" element={<LoginHistoryPage />} />
-                            <Route path="kelola-folder-divisi" element={<PilihDivisiPage />} />
-                            <Route path="kelola-folder/divisi/:divisionId" element={<KelolaFolderPage />} />
-                            
-                            <Route path="*" element={<Navigate to="beranda" replace />} />
-                        </Route>
-                        
-                        {/* Rute terproteksi untuk semua halaman utama lainnya */}
-                        <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
-                    </Routes>
+                            }>
+                                <Route index element={<Navigate to="beranda" replace />} />
+                                <Route path="beranda" element={<SuperAdminBeranda />} />
+                                <Route path="manajemen" element={<ManajemenPage />} />
+                                <Route path="manajemen/divisi" element={<KelolaDivisiPage />} />
+                                <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
+                                <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
+                                <Route path="manajemen/login-history" element={<LoginHistoryPage />} />
+                                <Route path="kelola-folder-divisi" element={<PilihDivisiPage />} />
+                                <Route path="kelola-folder/divisi/:divisionId" element={<KelolaFolderPage />} />
+                                {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
+                                <Route path="*" element={<Navigate to="beranda" replace />} />
+                            </Route>
+
+                            {/* Rute terproteksi untuk halaman utama lainnya */}
+                            <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
+                        </Routes>
+                    </AppLogicWrapper>
                 </Router>
             </AuthProvider>
         </AppProvider>
