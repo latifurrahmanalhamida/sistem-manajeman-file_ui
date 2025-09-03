@@ -1,12 +1,15 @@
 // src/context/AuthContext.js
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-    loginUser, 
-    logoutUser, 
-    getUser, 
-    recordFailedLoginAttempt, 
-    clearLoginAttempts 
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+    loginUser,
+    logoutUser,
+    getUser,
+    recordFailedLoginAttempt,
+    clearLoginAttempts,
+    startInactivityTimer, // Import timer functions
+    resetInactivityTimer,
+    stopInactivityTimer
 } from '../services/api';
 import apiClient from '../services/api';
 
@@ -17,6 +20,55 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('authToken'));
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    
+    // State untuk peringatan inaktivitas
+    const [inactivityWarning, setInactivityWarning] = useState(false);
+
+    // --- LOGIKA SESSION TIMEOUT ---
+
+    const logoutCallback = useCallback((isAutoLogout = false) => {
+        // Hentikan timer saat logout
+        stopInactivityTimer();
+        if (!isAutoLogout) { // Hindari loop jika logout karena timeout
+            logoutUser().catch(error => {
+                console.error("Logout API call failed, proceeding with local logout.", error);
+            });
+        }
+        
+        setUser(null);
+        setToken(null);
+        setInactivityWarning(false); // Sembunyikan modal saat logout
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        delete apiClient.defaults.headers.common['Authorization'];
+    }, []);
+
+    // Callback saat sesi akan berakhir (menampilkan peringatan)
+    const handleInactivityWarning = useCallback(() => {
+        setInactivityWarning(true);
+    }, []);
+
+    // Callback saat sesi berakhir (logout)
+    const handleInactivityLogout = useCallback(() => {
+        logoutCallback(true); // Pass true to indicate it's an auto-logout
+    }, [logoutCallback]);
+
+    // Fungsi untuk mereset timer (akan dipanggil oleh event listener global)
+    const resetActivityTimer = useCallback(() => {
+        // Juga sembunyikan modal peringatan jika user beraktivitas
+        if (inactivityWarning) {
+            setInactivityWarning(false);
+        }
+        resetInactivityTimer(handleInactivityLogout, handleInactivityWarning);
+    }, [inactivityWarning, handleInactivityLogout, handleInactivityWarning]);
+
+    // Fungsi untuk tetap login dari modal peringatan
+    const dismissInactivityWarning = () => {
+        setInactivityWarning(false);
+        resetActivityTimer();
+    };
+
+    // --- AKHIR LOGIKA SESSION TIMEOUT ---
 
     useEffect(() => {
         const bootstrapAuth = async () => {
@@ -27,16 +79,21 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const response = await getUser();
                     setUser(response.data);
+                    // Jika user sudah login, mulai timer saat aplikasi dimuat
+                    startInactivityTimer(handleInactivityLogout, handleInactivityWarning);
                 } catch (error) {
-                    localStorage.removeItem('authToken');
-                    setToken(null);
-                    setUser(null);
+                    logoutCallback(true); // Logout jika token tidak valid
                 }
             }
             setLoading(false);
         };
         bootstrapAuth();
-    }, []);
+
+        // Cleanup: hentikan timer jika komponen di-unmount
+        return () => {
+            stopInactivityTimer();
+        };
+    }, [handleInactivityLogout, handleInactivityWarning, logoutCallback]);
 
     const login = async (loginInput, password) => {
         try {
@@ -57,6 +114,9 @@ export const AuthProvider = ({ children }) => {
 
             // Hapus catatan percobaan login yang gagal jika berhasil
             clearLoginAttempts();
+
+            // Mulai timer setelah login berhasil
+            startInactivityTimer(handleInactivityLogout, handleInactivityWarning);
 
         } catch (error) {
             // Di sini kita menangani error dari server
@@ -100,7 +160,19 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const value = { user, token, loading, login, logout, searchQuery, setSearchQuery };
+    const value = { 
+        user, 
+        token, 
+        loading, 
+        login, 
+        logout, 
+        searchQuery, 
+        setSearchQuery,
+        // Tambahkan state dan fungsi baru ke context value
+        inactivityWarning,
+        resetActivityTimer,
+        dismissInactivityWarning
+    };
 
     return (
         <AuthContext.Provider value={value}>
