@@ -54,12 +54,10 @@ const LoginPage = () => {
             const errorMessage = err.message || 'Login gagal. Periksa kembali kredensial Anda.';
             setError(errorMessage);
 
-            // Jika error karena terlalu banyak percobaan, mulai timer
-            if (errorMessage.includes('Terlalu banyak percobaan')) {
-                const { isLocked: currentlyLocked, remainingTime } = checkLoginLockout();
-                if (currentlyLocked) {
-                    startLockoutTimer(remainingTime);
-                }
+            // Periksa status penguncian setiap kali login gagal
+            const { isLocked: currentlyLocked, remainingTime } = checkLoginLockout();
+            if (currentlyLocked) {
+                startLockoutTimer(remainingTime);
             }
         }
     };

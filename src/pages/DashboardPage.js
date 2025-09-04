@@ -127,7 +127,7 @@ const DivisionUserDashboard = () => {
 
     // State untuk modal overwrite dan rename
     const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
-    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '' });
+        const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '', extension: '' });
     const [renameUploadModal, setRenameUploadModal] = useState({ isOpen: false, file: null, newName: '' });
     const [sortBy, setSortBy] = useState('updated_at'); // Default sort by updated_at
     const [sortOrder, setSortOrder] = useState('desc'); // Default sort order descending
@@ -289,18 +289,31 @@ const DivisionUserDashboard = () => {
             setNotification({ isOpen: true, message: 'File tidak ditemukan untuk diubah nama. Silakan refresh halaman setelah replace file.', type: 'error' });
             return;
         }
-        setRenameModal({ isOpen: true, file: targetFile, newName: targetFile.nama_file_asli });
+
+        const originalName = targetFile.nama_file_asli;
+        const lastDotIndex = originalName.lastIndexOf('.');
+        
+        let baseName = originalName;
+        let extension = '';
+
+        if (lastDotIndex > 0 && lastDotIndex < originalName.length - 1) {
+            baseName = originalName.substring(0, lastDotIndex);
+            extension = originalName.substring(lastDotIndex);
+        }
+
+        setRenameModal({ isOpen: true, file: targetFile, newName: baseName, extension: extension });
     };
 
     const confirmRename = async () => {
         if (!renameModal.file || !renameModal.newName) return;
         try {
-            const response = await renameFile(renameModal.file.id, renameModal.newName);
+            const finalNewName = renameModal.newName.trim() + renameModal.extension;
+            const response = await renameFile(renameModal.file.id, finalNewName);
             setFiles(currentFiles =>
                 currentFiles.map(f => (f.id === renameModal.file.id ? response.data.file : f))
             );
             setNotification({ isOpen: true, message: 'Nama file berhasil diubah.', type: 'success' });
-            setRenameModal({ isOpen: false, file: null, newName: '' });
+            setRenameModal({ isOpen: false, file: null, newName: '', extension: '' });
         } catch (error) {
             const message = error.response?.data?.message || 'Gagal mengubah nama file.';
             setNotification({ isOpen: true, message, type: 'error' });
@@ -600,12 +613,15 @@ const DivisionUserDashboard = () => {
             >
                 <div>
                     <p>Masukkan nama file baru untuk "{renameModal.file?.nama_file_asli}":</p>
-                    <input
-                        type="text"
-                        value={renameModal.newName}
-                        onChange={(e) => setRenameModal({ ...renameModal, newName: e.target.value })}
-                        className="form-input w-full mt-2"
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <input
+                            type="text"
+                            value={renameModal.newName}
+                            onChange={(e) => setRenameModal({ ...renameModal, newName: e.target.value })}
+                            className="form-input w-full mt-2"
+                        />
+                        {renameModal.extension && <span className="file-extension mt-2">{renameModal.extension}</span>}
+                    </div>
                     <div className="confirmation-modal-actions">
                         <button type="button" className="modal-button cancel-button" onClick={() => setRenameModal({ ...renameModal, isOpen: false })}>
                             <FaTimes /> Batal
