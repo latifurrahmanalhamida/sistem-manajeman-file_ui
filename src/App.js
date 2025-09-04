@@ -22,9 +22,13 @@ import EditUserPage from './pages/EditUserPage';
 import TrashUserPage from './pages/TrashUserPage';
 import KelolaFolderPage from './pages/KelolaFolderPage';
 
+
 // --- IMPORT BARU UNTUK SUPER ADMIN ---
 import SuperAdminLayout from './components/Layout/SuperAdminLayout';
 import SuperAdminBeranda from './pages/SuperAdminBeranda';
+import SuperAdminPengaturanPage from './pages/SuperAdminPengaturanPage';
+// import SuperAdminBackupPage from './pages/SuperAdminPengaturanPage'; // 🚀 import baru
+import SuperAdminBackupPage from './pages/SuperAdminBackupPage';
 import ManajemenPage from './pages/ManajemenPage'; 
 import KelolaDivisiPage from './pages/KelolaDivisiPage';
 import KelolaPenggunaPage from './pages/KelolaPenggunaPage'; 
@@ -133,49 +137,63 @@ const MainRoutes = () => (
 
 // --- Komponen Utama App ---
 function App() {
-    return (
-        <AppProvider>
-            <AuthProvider>
-                <Router>
-                    <AppLogicWrapper>
-                        <Routes>
-                            {/* Rute publik */}
-                            <Route path="/login" element={<LoginPage />} />
+  return (
+    <AppProvider>
+      <AuthProvider>
+        <Router>
+          <AppLogicWrapper>
+            <Routes>
+              {/* Rute publik */}
+              <Route path="/login" element={<LoginPage />} />
 
-                            {/* Rute terproteksi untuk Panel Admin Devisi */}
-                            <Route path="/panel-admin/*" element={
-                                <ProtectedRoute allowedRoles={['admin_devisi']}>
-                                    <AdminPanelRoutes />
-                                </ProtectedRoute>
-                            } />
+              {/* Rute terproteksi untuk Panel Admin Devisi */}
+              <Route
+                path="/panel-admin/*"
+                element={
+                  <ProtectedRoute allowedRoles={['admin_devisi']}>
+                    <AdminPanelRoutes />
+                  </ProtectedRoute>
+                }
+              />
 
-                            {/* RUTE SUPER ADMIN */}
-                            <Route path="/super-admin" element={
-                                <ProtectedRoute allowedRoles={['super_admin']}>
-                                    <SuperAdminLayout />
-                                </ProtectedRoute>
-                            }>
-                                <Route index element={<Navigate to="beranda" replace />} />
-                                <Route path="beranda" element={<SuperAdminBeranda />} />
-                                <Route path="manajemen" element={<ManajemenPage />} />
-                                <Route path="manajemen/divisi" element={<KelolaDivisiPage />} />
-                                <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
-                                <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
-                                <Route path="manajemen/login-history" element={<LoginHistoryPage />} />
-                                <Route path="kelola-folder-divisi" element={<PilihDivisiPage />} />
-                                <Route path="kelola-folder/divisi/:divisionId" element={<KelolaFolderPage />} />
-                                {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
-                                <Route path="*" element={<Navigate to="beranda" replace />} />
-                            </Route>
+              {/* RUTE SUPER ADMIN */}
+              <Route
+                path="/super-admin"
+                element={
+                  <ProtectedRoute allowedRoles={['super_admin']}>
+                    <SuperAdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                {/* Rute nested */}
+                <Route index element={<Navigate to="beranda" replace />} />
+                <Route path="beranda" element={<SuperAdminBeranda />} />
+                <Route path="manajemen" element={<ManajemenPage />} />
+                <Route path="manajemen/divisi" element={<KelolaDivisiPage />} />
+                <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
+                <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
 
-                            {/* Rute terproteksi untuk halaman utama lainnya */}
-                            <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
-                        </Routes>
-                    </AppLogicWrapper>
-                </Router>
-            </AuthProvider>
-        </AppProvider>
-    );
+                {/* Dari kelola-folder-superadmin-ui */}
+                <Route path="manajemen/login-history" element={<LoginHistoryPage />} />
+                <Route path="kelola-folder-divisi" element={<PilihDivisiPage />} />
+                <Route path="kelola-folder/divisi/:divisionId" element={<KelolaFolderPage />} />
+
+                {/* Dari feature/backup-data-ui */}
+                <Route path="pengaturan/backup" element={<SuperAdminBackupPage />} />
+                <Route path="pengaturan" element={<SuperAdminPengaturanPage />} />
+
+                <Route path="*" element={<Navigate to="beranda" replace />} />
+              </Route>
+
+              {/* Rute terproteksi untuk halaman utama lainnya */}
+              <Route path="/*" element={<ProtectedRoute><MainRoutes /></ProtectedRoute>} />
+            </Routes>
+          </AppLogicWrapper>
+        </Router>
+      </AuthProvider>
+    </AppProvider>
+  );
 }
+
 
 export default App;
