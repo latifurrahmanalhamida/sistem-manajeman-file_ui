@@ -1,5 +1,5 @@
 // src/components/Dashboard/ActivityLogTable.js
-import React, { useState, useEffect, useCallback } from 'react'; // <-- 1. Impor useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import apiClient from '../../services/api';
 import './ActivityLogTable.css';
 import { FaPlus, FaEdit, FaTrash, FaUndo, FaUser } from 'react-icons/fa';
@@ -7,6 +7,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Pagination from './Pagination';
 import { useAppContext } from '../../context/AppContext';
+import DeleteLogModal from './DeleteLogModal'; // Import the DeleteLogModal
+
 
 const getActionIcon = (action) => {
     if (action.includes('Membuat') || action.includes('Mengunggah')) return <FaPlus className="icon-create" />;
@@ -17,19 +19,21 @@ const getActionIcon = (action) => {
 };
 
 const ActivityLogTable = () => {
-    const { lastActivity } = useAppContext();
+    const { lastActivity, triggerActivityLogRefresh } = useAppContext();
     const [logs, setLogs] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null); // Added successMessage state
     const [textFilter, setTextFilter] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false); // State for DeleteLogModal
 
-    // --- 2. Bungkus fetchLogs dengan useCallback ---
     const fetchLogs = useCallback(async (url = '/admin/activity-logs', params = {}) => {
         setLoading(true);
         setError(null);
+        setSuccessMessage(null); // Clear success message on new fetch
         try {
             const response = await apiClient.get(url, { params });
             const responseData = response.data;
@@ -44,13 +48,11 @@ const ActivityLogTable = () => {
         } finally {
             setLoading(false);
         }
-    }, []); // Array kosong berarti fungsi ini tidak akan dibuat ulang
+    }, []);
 
-    // --- 3. Perbarui useEffect ---
     useEffect(() => {
-        // Panggil fetchLogs dengan parameter default saat komponen dimuat atau saat lastActivity berubah
         fetchLogs();
-    }, [lastActivity, fetchLogs]); // Sekarang ia "mendengarkan" lastActivity dan fungsi fetchLogs yang stabil
+    }, [lastActivity, fetchLogs]);
 
     const formatDateForAPI = (date) => {
         if (!date) return null;
@@ -79,6 +81,22 @@ const ActivityLogTable = () => {
         fetchLogs(finalPath);
     };
 
+    // Fungsi untuk menghapus log
+    const handleDeleteLogs = async (range) => {
+        try {
+            await apiClient.post('/admin/activity-logs/delete-by-range', { range });
+            
+            triggerActivityLogRefresh(); // Refresh data
+            // Tidak ada alert lagi
+            setSuccessMessage('Log aktivitas berhasil dihapus.'); // Add success message
+        } catch (err) {
+            setError('Gagal menghapus log aktivitas.');
+            console.error('Failed to delete activity logs:', err);
+        } finally {
+            setShowDeleteModal(false); // Close modal after action
+        }
+    };
+
     const filteredLogs = logs.filter(log => 
         (log.user?.name?.toLowerCase() || '').includes(textFilter.toLowerCase()) ||
         (log.action?.toLowerCase() || '').includes(textFilter.toLowerCase()) ||
@@ -105,13 +123,16 @@ const ActivityLogTable = () => {
                     <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Selesai" className="date-input" isClearable />
                     <button className="btn btn-primary" onClick={handleFilterSubmit}>Filter</button>
                     <button className="btn btn-secondary" onClick={handleResetFilter}>Reset</button>
+                    {/* Tombol untuk membuka modal hapus */}
+                    <button className="btn btn-danger" onClick={() => setShowDeleteModal(true)}><FaTrash /></button>
                 </div>
             </div>
-            
+
             {loading ? (
                 <p>Memuat log aktivitas...</p> 
             ) : (
                 <>
+                    {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
                     <table className="data-table">
                         <thead>
                             <tr>
@@ -133,7 +154,7 @@ const ActivityLogTable = () => {
                                             {getActionIcon(log.action)}
                                             <span>{log.action}</span>
                                         </td>
-                                        <td className="log-target">{log.target_type ? `${log.target_type.split('\\').pop()} #${log.target_id}` : '-'}</td>
+                                                                                <td className="log-target">{log.target_type ? `${log.target_type.split(String.fromCharCode(92)).pop()} #${log.target_id}` : '-'}</td>
                                         <td>{log.details?.info ?? '-'}</td>
                                         <td>
                                             <span className={`status-badge status-${log.status.toLowerCase()}`}>{log.status}</span>
@@ -150,6 +171,11 @@ const ActivityLogTable = () => {
                     <Pagination meta={pagination?.meta} links={pagination?.links} onPageChange={handlePageChange} />
                 </>
             )}
+            <DeleteLogModal 
+                isOpen={showDeleteModal} 
+                onClose={() => setShowDeleteModal(false)} 
+                onConfirm={handleDeleteLogs} 
+            />
         </div>
     );
 };

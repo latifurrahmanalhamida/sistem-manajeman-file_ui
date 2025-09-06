@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import './KelolaDivisiPage.css';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import DivisiFormModal from '../components/Dashboard/DivisiFormModal';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal'; 
 import { useAppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 // Helper function untuk format byte
 const formatBytes = (bytes, decimals = 2) => {
@@ -19,6 +20,7 @@ const formatBytes = (bytes, decimals = 2) => {
 };
 
 const KelolaDivisiPage = () => {
+    const navigate = useNavigate();
     const { triggerActivityLogRefresh } = useAppContext();
     const [divisions, setDivisions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,10 +28,12 @@ const KelolaDivisiPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [divisionToEdit, setDivisionToEdit] = useState(null);
 
-    // --- 2. State baru untuk modal HAPUS ---
+    // --- State baru untuk modal HAPUS ---
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [divisionToDelete, setDivisionToDelete] = useState(null);
-    // ----------------------------------------
+    
+    // --- State baru untuk search bar ---
+    const [searchQuery, setSearchQuery] = useState('');
 
     const fetchDivisions = async () => {
         setLoading(true);
@@ -68,7 +72,7 @@ const KelolaDivisiPage = () => {
         triggerActivityLogRefresh(); 
     };
 
-    // --- 3. Fungsi-fungsi baru untuk menangani HAPUS ---
+    // --- Fungsi-fungsi baru untuk menangani HAPUS ---
     const handleDeleteClick = (division) => {
         setDivisionToDelete(division);
         setIsDeleteModalOpen(true);
@@ -93,7 +97,11 @@ const KelolaDivisiPage = () => {
             handleCloseDeleteModal();
         }
     };
-    // ----------------------------------------------------
+    
+    // --- Filter divisions based on search query ---
+    const filteredDivisions = divisions.filter(division =>
+        division.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     if (loading) return <div>Memuat data divisi...</div>;
     if (error) return <div className="error-message">{error}</div>;
@@ -102,7 +110,20 @@ const KelolaDivisiPage = () => {
         <>
             <div className="kelola-divisi-page">
                 <div className="page-header">
+                    <button onClick={() => navigate(-1)} className="back-button">
+                        <FaArrowLeft />
+                    </button>
                     <h1>Kelola Divisi</h1>
+                </div>
+
+                <div className="search-bar-wrapper">
+                    <input
+                        type="text"
+                        placeholder="Cari nama divisi..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="search-input"
+                    />
                     <button className="btn btn-primary" onClick={handleOpenCreateModal}>
                         <FaPlus /> Tambah Divisi
                     </button>
@@ -120,7 +141,7 @@ const KelolaDivisiPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {divisions.map((division, index) => (
+                            {filteredDivisions.map((division, index) => (
                                 <tr key={division.id}>
                                     <td>{index + 1}</td>
                                     <td>{division.name}</td>
@@ -130,7 +151,6 @@ const KelolaDivisiPage = () => {
                                         <button className="btn-icon btn-edit" title="Edit" onClick={() => handleOpenEditModal(division)}>
                                             <FaEdit />
                                         </button>
-                                        {/* 4. Hubungkan tombol Hapus dengan fungsi */}
                                         <button className="btn-icon btn-delete" title="Hapus" onClick={() => handleDeleteClick(division)}>
                                             <FaTrash />
                                         </button>
@@ -149,16 +169,14 @@ const KelolaDivisiPage = () => {
                 divisionToEdit={divisionToEdit}
             />
 
-            {/* --- 5. Render Modal Konfirmasi Hapus --- */}
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
                 onClose={handleCloseDeleteModal}
                 onConfirm={confirmDelete}
-                message={`Apakah Anda yakin ingin menghapus divisi "${divisionToDelete?.name}"? Semua file dan pengguna di dalamnya akan terpengaruh.`}
+                message={`Apakah Anda yakin ingin menghapus divisi \"${divisionToDelete?.name}\"? Semua file dan pengguna di dalamnya akan terpengaruh.`}
                 isDanger={true}
                 confirmText="Ya, Hapus"
             />
-            {/* -------------------------------------- */}
         </>
     );
 };

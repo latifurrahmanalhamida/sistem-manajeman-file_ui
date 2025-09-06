@@ -3,10 +3,11 @@
     background-color: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 1.5rem; /* Padding diperbesar */
+     /* Padding diperbesar */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     overflow: auto; /* Mengizinkan scroll horizontal dan vertikal */
-    max-height: 70vh; /* Batasi tinggi container agar bisa di-scroll */
+    max-height: 70vh;
+    max-width: 1100px; /* Batasi tinggi container agar bisa di-scroll */
 }
 
 /* --- STYLE BARU UNTUK FILTER --- */
@@ -62,10 +63,49 @@
     gap: 10px;
     font-weight: 500;
 }
-.log-action .icon-create { color: #198754; } /* Hijau */
-.log-action .icon-update { color: #0d6efd; } /* Biru */
-.log-action .icon-delete { color: #dc3545; } /* Merah */
-.log-action .icon-restore { color: #6f42c1; } /* Ungu */
+.date-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.purge-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.btn-danger-outline {
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-danger-outline:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+    border: 1px solid #dc3545;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
 /* ---------------------------------- */
 
 .log-target {

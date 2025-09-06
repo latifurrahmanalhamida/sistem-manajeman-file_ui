@@ -29,7 +29,7 @@ import ManajemenPage from './pages/ManajemenPage';
 import KelolaDivisiPage from './pages/KelolaDivisiPage';
 import KelolaPenggunaPage from './pages/KelolaPenggunaPage'; 
 import KelolaPenggunaSampahPage from './pages/KelolaPenggunaSampahPage'; 
-import LoginHistoryPage from './pages/LoginHistoryPage';
+import LoginHistoryPage from './pages/LoginHistoryPage';    
 import PilihDivisiPage from './pages/PilihDivisiPage'; 
 // import PengaturanPage from './pages/PengaturanPage'; 
 
