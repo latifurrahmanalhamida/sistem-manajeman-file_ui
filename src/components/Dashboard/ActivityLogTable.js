@@ -1,5 +1,5 @@
 // src/components/Dashboard/ActivityLogTable.js
-import React, { useState, useEffect, useCallback } from 'react'; // <-- 1. Impor useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import apiClient from '../../services/api';
 import './ActivityLogTable.css';
 import { FaPlus, FaEdit, FaTrash, FaUndo, FaUser } from 'react-icons/fa';

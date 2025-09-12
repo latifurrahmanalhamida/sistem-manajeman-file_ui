@@ -1,4 +1,4 @@
-/* src/pages/PilihDivisiPage.css */
+/* File: src/pages/PilihDivisiPage.css (VERSI FINAL) */
 
 .pilih-divisi-page {
     padding: 1.5rem;
@@ -23,6 +23,8 @@
     text-decoration: none;
     color: #343a40;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .division-card:hover {
@@ -41,6 +43,8 @@
     gap: 0.5rem;
     font-size: 0.9rem;
     color: #6c757d;
+    flex-grow: 1; /* Membuat stats mengisi ruang */
+    justify-content: space-between; /* Mendorong progress bar ke bawah */
 }
 
 .division-stats span {
@@ -79,19 +83,34 @@
 
 .storage-info {
     width: 100%;
+    margin-top: 1rem; /* Memberi jarak dari info folder */
+}
+
+/* --- STYLE UNTUK PROGRESS BAR (BARU) --- */
+.progress-bar-container {
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    height: 8px; /* Dibuat lebih tipis */
+    margin-top: 0.5rem;
+    overflow: hidden;
 }
 
 .progress-bar {
-    width: 100%;
-    height: 8px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 6px;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
 }
 
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, rgba(13,110,253,1) 0%, rgb(255, 0, 30) 100%);
-    border-radius: 4px;
+/* KUNCI WARNA DINAMIS */
+.progress-bar.primary {
+  background-color: #13da05; /* Biru */
+}
+
+.progress-bar.warning {
+  background-color: #ffc107; /* Kuning */
+}
+
+.progress-bar.danger {
+  background-color: #dc3545; /* Merah */
 }

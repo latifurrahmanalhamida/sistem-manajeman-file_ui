@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SuperAdminBackupPage from "./SuperAdminBackupPage";
+import DivisionQuotaPage from "./DivisionQuotaPage";
 import "./SuperAdminPengaturanPage.css"; // ✅ import CSS
 
 export default function SuperAdminPengaturanPage() {
@@ -23,6 +24,14 @@ export default function SuperAdminPengaturanPage() {
         >
           Backup Data
         </button>
+
+        {/* 2. TAMBAHKAN TOMBOL TAB BARU DI SINI */}
+        <button
+          className={`tab-btn ${activeTab === "quota" ? "active" : ""}`}
+          onClick={() => setActiveTab("quota")}
+        >
+          Kuota Divisi
+        </button>
       </div>
 
       {/* Isi Konten */}
@@ -33,6 +42,9 @@ export default function SuperAdminPengaturanPage() {
           </div>
         )}
         {activeTab === "backup" && <SuperAdminBackupPage />}
+
+        {/* 3. TAMBAHKAN KONTEN UNTUK TAB BARU DI SINI */}
+        {activeTab === "quota" && <DivisionQuotaPage />}
       </div>
     </div>
   );

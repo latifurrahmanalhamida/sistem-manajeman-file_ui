@@ -1,10 +1,10 @@
-// src/pages/PilihDivisiPage.js
+// File: src/pages/PilihDivisiPage.js (VERSI FINAL)
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../services/api';
 import { FaFolder, FaDatabase } from 'react-icons/fa';
-import './PilihDivisiPage.css'; // Kita akan buat file CSS ini
+import './PilihDivisiPage.css';
 
 const formatBytes = (bytes, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
@@ -21,48 +21,11 @@ const PilihDivisiPage = () => {
     const [error, setError] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
 
-    // BARU: Logika untuk mengurutkan data divisi
-    const processedDivisions = React.useMemo(() => {
-        if (divisions.length === 0) return [];
-
-        // Cari tahu ukuran penyimpanan maksimum
-        const maxStorage = Math.max(...divisions.map(d => d.total_storage), 1); // hindari pembagian dengan nol
-
-        // Urutkan data
-        let sortableItems = divisions.map(division => ({
-            ...division,
-            // Hitung persentase penyimpanan
-            storage_percentage: (division.total_storage / maxStorage) * 100,
-        }));
-
-        // ... sisa logika sorting tetap sama ...
-        if (sortConfig.key !== null) {
-            sortableItems.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
-        return sortableItems;
-    }, [divisions, sortConfig]);
-
-    // BARU: Fungsi untuk mengubah konfigurasi urutan
-    const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        setSortConfig({ key, direction });
-    };
-
     useEffect(() => {
         const fetchDivisions = async () => {
             try {
-                const response = await apiClient.get('/admin/divisions-with-stats');
+                // Ganti endpoint untuk mendapatkan data kuota
+                const response = await apiClient.get('/admin/divisions');
                 setDivisions(response.data);
             } catch (err) {
                 setError('Gagal memuat data divisi.');
@@ -74,6 +37,37 @@ const PilihDivisiPage = () => {
 
         fetchDivisions();
     }, []);
+    
+    const processedDivisions = React.useMemo(() => {
+        if (divisions.length === 0) return [];
+        
+        let sortableItems = [...divisions];
+
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                // Gunakan files_sum_ukuran_file untuk sorting ukuran
+                const keyA = sortConfig.key === 'total_storage' ? (a.files_sum_ukuran_file || 0) : a[sortConfig.key];
+                const keyB = sortConfig.key === 'total_storage' ? (b.files_sum_ukuran_file || 0) : b[sortConfig.key];
+
+                if (keyA < keyB) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (keyA > keyB) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [divisions, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
 
     if (loading) return <div>Memuat data divisi...</div>;
     if (error) return <div className="error-message">{error}</div>;
@@ -94,29 +88,40 @@ const PilihDivisiPage = () => {
                 </button>
             </div>
             <div className="division-grid">
-                {processedDivisions.map(division => (
-                    <Link 
-                        key={division.id} 
-                        to={`/super-admin/kelola-folder/divisi/${division.id}`} 
-                        className="division-card"
-                    >
-                        <h3>{division.name}</h3>
-                        <div className="division-stats">
-                            <span><FaFolder /> {division.folders_count} Folder</span>
-                            <div className="storage-info">
-                                <span><FaDatabase /> {formatBytes(division.total_storage)}</span>
-                                
-                                {/* --- PROGRESS BAR YANG DITAMBAHKAN --- */}
-                                <div className="progress-bar">
-                                    <div 
-                                        className="progress-bar-fill" 
-                                        style={{ width: `${division.storage_percentage}%` }}
-                                    ></div>
+                {processedDivisions.map(division => {
+                    const used = division.files_sum_ukuran_file || 0;
+                    const quota = division.storage_quota || 0;
+                    const percentage = quota > 0 ? (used / quota) * 100 : 0;
+                    
+                    return (
+                        <Link 
+                            key={division.id} 
+                            to={`/super-admin/kelola-folder/divisi/${division.id}`} 
+                            className="division-card"
+                        >
+                            <h3>{division.name}</h3>
+                            <div className="division-stats">
+                                <span><FaFolder /> {division.folders_count || 0} Folder</span>
+                                <div className="storage-info">
+                                    <span>
+                                        <FaDatabase /> {formatBytes(used)}
+                                        {quota > 0 && ` / ${formatBytes(quota)}`}
+                                    </span>
+                                    
+                                    {/* --- PROGRESS BAR DINAMIS --- */}
+                                    {quota > 0 && (
+                                        <div className="progress-bar-container">
+                                            <div 
+                                                className={`progress-bar ${percentage >= 85 ? 'danger' : percentage >= 50 ? 'warning' : 'primary'}`}
+                                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                                            ></div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    </Link>
-                ))}
+                        </Link>
+                    )
+                })}
             </div>
         </div>
     );

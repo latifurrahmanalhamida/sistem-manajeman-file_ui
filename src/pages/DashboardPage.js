@@ -353,6 +353,35 @@ const DivisionUserDashboard = () => {
         setIsBulkDeleteModalOpen(true);
     };
 
+    const handleUploadError = (err) => {
+        setIsUploadModalOpen(false); // Close the main upload modal
+        if (err.response) {
+            // Quota full error
+            if (err.response.status === 403) {
+                setNotification({ 
+                    isOpen: true, 
+                    message: err.response.data.message || 'Gagal: Kuota penyimpanan penuh.', 
+                    type: 'error' 
+                });
+            } 
+            // Other server-side errors
+            else {
+                setNotification({ 
+                    isOpen: true, 
+                    message: err.response.data.message || 'Gagal mengunggah file. Terjadi masalah di server.', 
+                    type: 'error' 
+                });
+            }
+        } else {
+            // Network or other errors
+            setNotification({ 
+                isOpen: true, 
+                message: 'Gagal mengunggah file. Periksa koneksi Anda.', 
+                type: 'error' 
+            });
+        }
+    };
+
     const confirmBulkDelete = async () => {
         const promises = selectedFileIds.map(id => deleteFile(id));
         try {
@@ -368,35 +397,51 @@ const DivisionUserDashboard = () => {
         }
     };
 
-    const executeUpload = async (file, options = {}) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        if (options.newName) {
-            formData.append('new_name', options.newName);
-        }
-        if (options.overwrite) {
-            formData.append('overwrite', true);
-        }
+const executeUpload = async (file, options = {}) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (options.newName) {
+        formData.append('new_name', options.newName);
+    }
+    if (options.overwrite) {
+        formData.append('overwrite', true);
+    }
 
-        try {
-            // Sertakan folder_id jika berada di dalam folder
-            const fid = searchParams.get('folder_id');
-            if (fid) {
-                formData.append('folder_id', fid);
-            }
-            await uploadFile(formData, options);
-            const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
-            setNotification({ isOpen: true, message: successMessage, type: 'success' });
-            fetchFiles();
-        } catch (err) {
-            if (err.response && err.response.status === 409) {
-                handleConflict(file, err.response.data.message);
-            } else {
-                console.error('Upload error:', err.response ? err.response.data : err.message);
-                setNotification({ isOpen: true, message: 'Gagal mengunggah file.', type: 'error' });
-            }
+    try {
+        const fid = searchParams.get('folder_id');
+        if (fid) {
+            formData.append('folder_id', fid);
         }
-    };
+        await uploadFile(formData, options);
+        const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
+        setNotification({ isOpen: true, message: successMessage, type: 'success' });
+        fetchFiles();
+    } catch (err) {
+        // --- PERUBAHAN UTAMA ADA DI SINI ---
+        if (err.response) {
+            // Jika error karena konflik nama (409)
+            if (err.response.status === 409) {
+                handleConflict(file, err.response.data.message);
+            // Jika error karena kuota penuh (403)
+            } else if (err.response.status === 403) {
+                // Tampilkan pesan spesifik dari backend
+                setNotification({ 
+                    isOpen: true, 
+                    message: err.response.data.message || 'Gagal: Kuota penyimpanan penuh.', 
+                    type: 'error' 
+                });
+            // Untuk semua error server lainnya
+            } else {
+                console.error('Upload error:', err.response.data);
+                setNotification({ isOpen: true, message: 'Gagal mengunggah file. Terjadi masalah di server.', type: 'error' });
+            }
+        } else {
+            // Untuk error jaringan atau lainnya
+            console.error('Upload error:', err.message);
+            setNotification({ isOpen: true, message: 'Gagal mengunggah file. Periksa koneksi Anda.', type: 'error' });
+        }
+    }
+};
 
     const confirmOverwrite = () => {
         executeUpload(overwriteModal.file, { overwrite: true });
@@ -568,7 +613,7 @@ const DivisionUserDashboard = () => {
             </div>
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />
+                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} onUploadError={handleUploadError} currentFolderId={currentFolderId} />
             </Modal>
 
             <ConfirmationModal

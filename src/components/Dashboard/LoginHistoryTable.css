@@ -118,3 +118,7 @@
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+/* Warna abu-abu untuk auto-logout */
+.action-badge.auto-logout {
+    background-color: #6c757d;
+}
