@@ -14,6 +14,7 @@ import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
 import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
 import SortControls from '../components/SortControls/SortControls';
+import CustomDropdown from '../components/CustomDropdown/CustomDropdown';
 
 import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave, FaPencilAlt, FaArrowLeft } from 'react-icons/fa'; // Import FaArrowLeft
 import getFileIcon from '../utils/fileIcons';
@@ -25,9 +26,6 @@ const SuperAdminDashboard = ({ onSelectDivision }) => {
     const { user } = useAuth();
     const [divisions, setDivisions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [isDivisionModalOpen, setIsDivisionModalOpen] = useState(false); // State untuk modal pemilihan divisi
-    const [selectedFolderId, setSelectedFolderId] = useState(null);
     const [notification, setNotification] = useState({ isOpen: false, message: '', type: '' });
 
     useEffect(() => {
@@ -44,14 +42,8 @@ const SuperAdminDashboard = ({ onSelectDivision }) => {
         fetchDivisionsData();
     }, []);
 
-    const handleUploadComplete = () => {
-        setIsUploadModalOpen(false);
-        setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
-    };
-
     const handleDivisionSelect = (division) => {
         onSelectDivision(division);
-        setIsDivisionModalOpen(false);
     };
 
     if (loading) return <div>Loading data divisi...</div>;
@@ -60,11 +52,11 @@ const SuperAdminDashboard = ({ onSelectDivision }) => {
         <div className="dashboard-container">
             <div className="dashboard-header">
                 <h1>{user?.name} Dashboard</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button className="upload-button" onClick={() => setIsDivisionModalOpen(true)}>
-                        Pilih Divisi
-                    </button>
-                </div>
+                <CustomDropdown
+                    options={divisions}
+                    onSelect={handleDivisionSelect}
+                    triggerText="Pilih Divisi"
+                />
             </div>
             {divisions.map(division => (
                 <section key={division.id} style={{ marginBottom: '2rem' }}>
@@ -80,16 +72,6 @@ const SuperAdminDashboard = ({ onSelectDivision }) => {
                     </div>
                 </section>
             ))}
-
-            <Modal isOpen={isDivisionModalOpen} onClose={() => setIsDivisionModalOpen(false)} title="Pilih Drive Divisi">
-                <div className="division-selector-list">
-                    {divisions.map(division => (
-                        <button key={division.id} onClick={() => handleDivisionSelect(division)} className="division-selector-item">
-                            {division.name}
-                        </button>
-                    ))}
-                </div>
-            </Modal>
             
             {notification.isOpen && (
                 <Notification
