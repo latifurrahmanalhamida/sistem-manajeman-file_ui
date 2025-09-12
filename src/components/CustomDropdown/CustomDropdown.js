@@ -25,14 +25,14 @@ const CustomDropdown = ({ options, onSelect, triggerText }) => {
 
     return (
         <div className="custom-dropdown" ref={dropdownRef}>
-            <button onClick={() => setIsOpen(!isOpen)} className="dropdown-trigger">
+            <button onClick={() => setIsOpen(!isOpen)} className="dropdown-trigger-b">
                 {triggerText}
                 <i className={`arrow ${isOpen ? 'up' : 'down'}`}></i>
             </button>
             {isOpen && (
-                <div className="dropdown-menu">
+                <div className="dropdown-menu-b">
                     {options.map(option => (
-                        <button key={option.id} onClick={() => handleSelect(option)} className="dropdown-item">
+                        <button key={option.id} onClick={() => handleSelect(option)} className="dropdown-item-b">
                             {option.name}
                         </button>
                     ))}

@@ -545,8 +545,13 @@ const DivisionUserDashboard = ({ viewingAsAdminForDivision, onExitAdminView }) =
                 )}
             </div>
 
-            <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} currentFolderId={currentFolderId} />
+                        <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
+                <FileUploadForm 
+                    onUploadComplete={handleUploadComplete} 
+                    onConflict={handleConflict} 
+                    currentFolderId={currentFolderId}
+                    divisionId={viewingAsAdminForDivision?.id}
+                />
             </Modal>
 
             <ConfirmationModal

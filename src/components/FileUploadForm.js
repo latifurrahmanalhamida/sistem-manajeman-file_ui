@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import apiClient from '../services/api';
 
 // Terima prop 'onUploadSuccess' untuk memberitahu Dashboard bahwa upload berhasil
-const FileUploadForm = ({ onUploadSuccess }) => {
+const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId, divisionId }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
@@ -24,6 +24,14 @@ const FileUploadForm = ({ onUploadSuccess }) => {
         const formData = new FormData();
         formData.append('document', selectedFile); // 'document' harus cocok dengan nama di backend
 
+        if (currentFolderId) {
+            formData.append('folder_id', currentFolderId);
+        }
+
+        if (divisionId) {
+            formData.append('division_id', divisionId);
+        }
+
         try {
             const response = await apiClient.post('/api/files', formData, {
                 headers: {
@@ -32,12 +40,16 @@ const FileUploadForm = ({ onUploadSuccess }) => {
             });
 
             // Jika berhasil, panggil fungsi prop dan reset form
-            onUploadSuccess(response.data);
+            onUploadComplete(response.data);
             setSelectedFile(null);
 
         } catch (err) {
-            console.error('Upload error:', err);
-            setError('Upload gagal. Pastikan file tidak lebih dari 2MB.');
+            if (err.response && err.response.status === 409) {
+                onConflict(selectedFile, err.response.data.message);
+            } else {
+                console.error('Upload error:', err);
+                setError('Upload gagal. Pastikan file tidak lebih dari 2MB.');
+            }
         } finally {
             setIsUploading(false);
         }
