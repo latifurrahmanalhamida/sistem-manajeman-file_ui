@@ -4,18 +4,36 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import StatCard from '../components/Dashboard/StatCard';
 import ChartCard from '../components/Dashboard/ChartCard';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import './SuperAdminBeranda.css';
 
-// Komponen kecil untuk progress bar di dalam StatCard
-const ProgressBar = ({ percentage }) => (
-    <div className="progress-bar-container">
-        <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
-    </div>
-);
+// [BARU] Tooltip kustom untuk grafik kuota agar lebih informatif
+const CustomQuotaTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="custom-tooltip" style={{ backgroundColor: '#fff', border: '1px solid #ccc', padding: '10px' }}>
+                <p className="label"><strong>{label}</strong></p>
+                <p>Penggunaan: {payload[0].payload.used} / {payload[0].payload.quota}</p>
+                <p>Persentase: {payload[0].value}%</p>
+            </div>
+        );
+    }
+    return null;
+};
+
+
+const getBarColor = (percentage) => {
+    if (percentage >= 80) {
+        return '#dc0b20ff'; // Merah untuk penggunaan 80% ke atas
+    }
+    if (percentage >= 50) {
+        return '#efb300ff'; // Kuning untuk penggunaan 50% - 79.9%
+    }
+    return '#00c82fff'; // Hijau untuk penggunaan di bawah 50%
+};
 
 const SuperAdminBeranda = () => {
-    const [stats, setStats] = useState(null);
+    const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -23,7 +41,7 @@ const SuperAdminBeranda = () => {
         const fetchDashboardData = async () => {
             try {
                 const response = await apiClient.get('/admin/dashboard-stats');
-                setStats(response.data);
+                setData(response.data);
             } catch (err) {
                 setError('Gagal memuat data dashboard. Pastikan backend berjalan.');
                 console.error('Could not fetch dashboard data:', err);
@@ -34,33 +52,27 @@ const SuperAdminBeranda = () => {
         fetchDashboardData();
     }, []);
 
-    if (loading) return <div>Loading dashboard data...</div>;
+    if (loading) return <div>Memuat data dasbor...</div>;
     if (error) return <div className="error-message">{error}</div>;
-    if (!stats) return <div>Tidak ada data untuk ditampilkan.</div>;
+    if (!data) return <div>Tidak ada data untuk ditampilkan.</div>;
 
     return (
         <div className="super-admin-beranda">
             <h1>Beranda</h1>
 
-            {/* Bagian Kartu Statistik Utama */}
+            {/* [DIROMBAK] Bagian Kartu Statistik Utama */}
             <div className="stats-grid">
-                <StatCard title="CPU" value={`${stats.cpu.percentage}%`}>
-                    <ProgressBar percentage={stats.cpu.percentage} />
-                </StatCard>
-                <StatCard title="RAM" value={`${stats.ram.percentage}%`}>
-                    <ProgressBar percentage={stats.ram.percentage} />
-                </StatCard>
-                <StatCard title="DISK" value={`${stats.disk.percentage}%`}>
-                    <ProgressBar percentage={stats.disk.percentage} />
-                </StatCard>
-                <StatCard title="Penyimpanan File" value={stats.storageUsed} />
+                <StatCard title="Total Pengguna" value={data.summary.totalUsers} />
+                <StatCard title="Total Divisi" value={data.summary.totalDivisions} />
+                <StatCard title="Total Dokumen" value={data.summary.totalFiles} />
+                <StatCard title="Penyimpanan Terpakai" value={data.summary.storageUsed} />
             </div>
 
-            {/* Bagian Grafik */}
+            {/* [DIROMBAK] Bagian Grafik */}
             <div className="charts-grid">
                 <ChartCard title="Upload 7 Hari Terakhir">
                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={stats.dailyUploads} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <LineChart data={data.dailyUploads} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} />
                             <YAxis allowDecimals={false} />
@@ -71,46 +83,42 @@ const SuperAdminBeranda = () => {
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Distribusi File per Divisi">
+                {/* [BARU] Grafik Penggunaan Kuota per Divisi */}
+                <ChartCard title="Penggunaan Kuota per Divisi">
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={stats.filesPerDivision} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <BarChart data={data.quotaPerDivision} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
-                            <YAxis allowDecimals={false} />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="count" name="Jumlah File" fill="#82ca9d" />
+                            <YAxis unit="%" />
+                            <Tooltip content={<CustomQuotaTooltip />} />
+                            <Bar dataKey="percentage" name="Penggunaan Kuota (%)">
+                                {data.quotaPerDivision.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={getBarColor(entry.percentage)} />
+                                ))}
+                            </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
             
-            {/* Bagian Ringkasan & Aktivitas Terbaru */}
+            {/* [DIROMBAK] Bagian Aktivitas Terbaru */}
             <div className="summary-grid">
-                 <ChartCard title="Ringkasan">
-                    <ul className="summary-list">
-                        <li><span>Total Pengguna</span> <strong>{stats.totalUsers}</strong></li>
-                        <li><span>Total Divisi</span> <strong>{stats.totalDivisions}</strong></li>
-                        <li><span>Total Dokumen</span> <strong>{stats.totalFiles}</strong></li>
-                        <li><span>Penyimpanan Terpakai</span> <strong>{stats.storageUsed}</strong></li>
-                    </ul>
-                 </ChartCard>
-
-                 <ChartCard title="Aktivitas Upload Terbaru">
+                 {/* Kartu Ringkasan dihapus karena sudah naik ke atas */}
+                 <ChartCard title="Aktivitas Terbaru Sistem">
                     <table className="recent-uploads-table">
                         <thead>
                             <tr>
-                                <th>Nama File</th>
-                                <th>Divisi</th>
-                                <th>Pengunggah</th>
+                                <th>Aktor</th>
+                                <th>Aksi</th>
+                                <th>Waktu</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {stats.recentUploads.map(file => (
-                                <tr key={file.id}>
-                                    <td>{file.nama_file_asli}</td>
-                                    <td>{file.division?.name ?? 'N/A'}</td>
-                                    <td>{file.uploader?.name ?? 'N/A'}</td>
+                            {data.recentActivities.map(log => (
+                                <tr key={log.id}>
+                                    <td>{log.actor}</td>
+                                    <td>{log.action}</td>
+                                    <td>{log.time}</td>
                                 </tr>
                             ))}
                         </tbody>
