@@ -107,67 +107,71 @@ const ActivityLogTable = () => {
 
     return (
         <div className="table-wrapper">
-             <div className="filter-controls">
-                <div className="text-filter-group">
-                    <input 
-                        type="text"
-                        className="filter-input"
-                        placeholder="Cari log berdasarkan pelaku, aksi, atau detail..."
-                        value={textFilter}
-                        onChange={(e) => setTextFilter(e.target.value)}
-                    />
-                </div>
-                <div className="date-filter-group">
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} selectsStart startDate={startDate} endDate={endDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Mulai" className="date-input" isClearable />
-                    <span>-</span>
-                    <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Selesai" className="date-input" isClearable />
-                    <button className="btn btn-primary" onClick={handleFilterSubmit}>Filter</button>
-                    <button className="btn btn-secondary" onClick={handleResetFilter}>Reset</button>
-                    {/* Tombol untuk membuka modal hapus */}
-                    <button className="btn btn-danger" onClick={() => setShowDeleteModal(true)}><FaTrash /></button>
-                </div>
-            </div>
+                    <div className="filter-controls">
+                        <div className="search-group">
+                            <svg /* Ikon Search */ xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
+                            <input 
+                                type="text"
+                                className="filter-input"
+                                placeholder="Cari log berdasarkan pelaku, aksi, atau detail..."
+                                value={textFilter}
+                                onChange={(e) => setTextFilter(e.target.value)}
+                            />
+                        </div>
+                        <div className="actions-group">
+                            <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} selectsStart startDate={startDate} endDate={endDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Mulai" className="date-input" isClearable />
+                            <span>-</span>
+                            <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Selesai" className="date-input" isClearable />
+                            <button className="btn btn-primary" onClick={handleFilterSubmit}>Filter</button>
+                            <button className="btn btn-secondary" onClick={handleResetFilter}>Reset</button>
+                            <button className="btn btn-danger" onClick={() => setShowDeleteModal(true)} title="Hapus Log">
+                                <FaTrash />
+                            </button>
+                        </div>
+                    </div>
 
             {loading ? (
                 <p>Memuat log aktivitas...</p> 
             ) : (
                 <>
                     {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Waktu</th>
-                                <th>Pelaku</th>
-                                <th>Aksi</th>
-                                <th>Target</th>
-                                <th>Detail</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLogs.length > 0 ? (
-                                filteredLogs.map(log => (
-                                    <tr key={log.id}>
-                                        <td className="log-time">{new Date(log.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'medium' })}</td>
-                                        <td>{log.user?.name ?? 'Sistem'}</td>
-                                        <td className="log-action">
-                                            {getActionIcon(log.action)}
-                                            <span>{log.action}</span>
-                                        </td>
-                                                                                <td className="log-target">{log.target_type ? `${log.target_type.split(String.fromCharCode(92)).pop()} #${log.target_id}` : '-'}</td>
-                                        <td>{log.details?.info ?? '-'}</td>
-                                        <td>
-                                            <span className={`status-badge status-${log.status.toLowerCase()}`}>{log.status}</span>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
+                    <div className="table-container">
+                        <table className="data-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan="6" style={{ textAlign: 'center' }}>Tidak ada data log yang ditemukan.</td>
+                                    <th>Waktu</th>
+                                    <th>Pelaku</th>
+                                    <th>Aksi</th>
+                                    <th>Target</th>
+                                    <th>Detail</th>
+                                    <th>Status</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredLogs.length > 0 ? (
+                                    filteredLogs.map(log => (
+                                        <tr key={log.id}>
+                                            <td className="log-time">{new Date(log.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'medium' })}</td>
+                                            <td>{log.user?.name ?? 'Sistem'}</td>
+                                            <td className="log-action">
+                                                {getActionIcon(log.action)}
+                                                <span>{log.action}</span>
+                                            </td>
+                                            <td className="log-target">{log.target_type ? `${log.target_type.split(String.fromCharCode(92)).pop()} #${log.target_id}` : '-'}</td>
+                                            <td>{log.details?.info ?? '-'}</td>
+                                            <td>
+                                                <span className={`status-badge status-${log.status.toLowerCase()}`}>{log.status}</span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="6" style={{ textAlign: 'center' }}>Tidak ada data log yang ditemukan.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                     <Pagination meta={pagination?.meta} links={pagination?.links} onPageChange={handlePageChange} />
                 </>
             )}

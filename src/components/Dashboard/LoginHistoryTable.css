@@ -1,107 +1,118 @@
-/* src/components/Dashboard/ActivityLogTable.css */
 
-/* Kontainer utama untuk tabel */
 .activity-log-table-container {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     width: 100%;
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    margin-top: 20px;
+    box-sizing: border-box;
 }
 
-/* Membuat tabel responsif */
-.table-responsive {
-    overflow-x: auto;
+/* --- Tata Letak Filter Kontrol Baru --- */
+.filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
-/* Styling utama tabel */
+/* Grup kosong di kiri untuk mendorong grup aksi ke kanan */
+.search-group {
+    flex-grow: 1;
+}
+
+.actions-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.date-input {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    max-width: 150px;
+}
+
+/* --- Perbaikan Tampilan Tabel --- */
+/* [PERBAIKAN] Menggunakan nama class yang sama dengan di file JS */
 .log-table {
     width: 100%;
-    border-collapse: collapse; /* Menghilangkan spasi antar border */
-    font-size: 14px;
+    border-collapse: collapse;
 }
 
-/* Styling untuk header tabel */
+.log-table th, .log-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
 .log-table th {
     background-color: #f8f9fa;
-    color: #495057;
-    text-align: left;
-    padding: 12px 15px;
-    border-bottom: 2px solid #dee2e6;
     font-weight: 600;
+    color: #343a40;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-
-/* Styling untuk sel data di tabel */
-.log-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e9ecef;
-    vertical-align: middle; /* Konten di tengah secara vertikal */
-}
-
-/* Menghilangkan border di baris terakhir */
 .log-table tbody tr:last-child td {
     border-bottom: none;
 }
-
-/* Styling untuk kolom User Agent agar tidak terlalu panjang */
-.user-agent {
-    max-width: 300px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 12px;
-    color: #6c757d;
+.log-table tbody tr:hover {
+    background-color: #f1f3f5;
 }
 
-/* Styling untuk badge/label aksi */
+/* --- Badge Aksi Login/Logout --- */
 .action-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: #fff;
     text-transform: capitalize;
+   
 }
 
-/* Warna hijau untuk login */
+.action-badge.Login,
 .action-badge.login {
-    background-color: #06dd38; /* Hijau */
+    background-color: #00c12d; /* Hijau */
+    color: #fff; /* Teks putih */
 }
 
-/* Warna oranye untuk logout */
+.action-badge.Logout,
 .action-badge.logout {
-    background-color: #f02b24; /* Oranye */
+    background-color: #dd061b; /* Merah */
+    color: #fff; /* Teks putih */
 }
-
-/* Styling untuk kontrol paginasi */
+/* --- Kontrol Paginasi --- */
 .pagination-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
-    font-size: 14px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    font-size: 0.9rem;
     color: #6c757d;
 }
-
 .pagination-controls button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
     padding: 8px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
-
-.pagination-controls button:hover {
-    background-color: #0056b3;
-}
-
 .pagination-controls button:disabled {
-    background-color: #c0c0c0;
     cursor: not-allowed;
+    opacity: 0.5;
 }
+
+/* Modal Styling */
 .modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -113,12 +124,17 @@
 
 .form-select {
     width: 100%;
-    padding: 10px;
+    padding: 10px 14px;
     margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 1rem;
 }
-/* Warna abu-abu untuk auto-logout */
-.action-badge.auto-logout {
-    background-color: #6c757d;
-}
+/* Tombol-tombol yang mungkin dipakai di modal atau filter */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; border: none; cursor: pointer; transition: background-color 0.2s; white-space: nowrap; }
+.btn-primary { background-color: #0d6efd; color: white; }
+.btn-primary:hover { background-color: #0b5ed7; }
+.btn-secondary { background-color: #6c757d; color: white; }
+.btn-secondary:hover { background-color: #5a6268; }
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #c82333; }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import apiClient from '../services/api';
-import './KelolaDivisiPage.css'; // Kita bisa gunakan kembali CSS yang sama
+import './KelolaPenggunaPage.css';
 import { FaArrowLeft, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import PenggunaFormModal from '../components/Dashboard/PenggunaFormModal';
 import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal';
@@ -110,7 +110,7 @@ const KelolaPenggunaPage = () => {
 
     return (
         <>
-            <div className="kelola-divisi-page">
+            <div className="page-container">
                 <div className="page-header">
                     <button onClick={() => navigate(-1)} className="back-button">
                         <FaArrowLeft />
@@ -119,14 +119,17 @@ const KelolaPenggunaPage = () => {
                 </div>
 
                 <div className="search-bar-wrapper">
-                    <input
-                        type="text"
-                        placeholder="Cari berdasarkan NIPP, nama, email, atau divisi..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="search-input"
-                    />
-                    <div className="header-actions">
+                    <div className="search-group">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
+                        <input
+                            type="text"
+                            placeholder="Cari berdasarkan NIPP, nama, email, atau divisi..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
+                    <div className="actions-group">
                         <Link to="/super-admin/manajemen/pengguna/sampah" className="btn btn-secondary">
                             <FaTrash /> Arsip Pengguna
                         </Link>

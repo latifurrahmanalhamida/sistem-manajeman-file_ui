@@ -1,129 +1,133 @@
-/* src/components/Dashboard/ActivityLogTable.css */
+/* src/components/Dashboard/ActivityLogTable.css - VERSI BARU */
+
+/* --- Wrapper Utama dengan Gaya Kartu --- */
 .table-wrapper {
     background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-     /* Padding diperbesar */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    overflow: auto; /* Mengizinkan scroll horizontal dan vertikal */
-    max-height: 70vh;
-    max-width: 1100px; /* Batasi tinggi container agar bisa di-scroll */
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 100%; /* Menggunakan lebar penuh */
+    box-sizing: border-box;
+}
+.table-container {
+    max-height: 65vh; /* Batasi tinggi tabel, sesuaikan nilainya jika perlu */
+    overflow-y: auto; /* Tambahkan scroll vertikal HANYA jika kontennya melebihi max-height */
+    width: 100%;
 }
 
-/* --- STYLE BARU UNTUK FILTER --- */
-.filter-container {
-    margin-bottom: 1.5rem;
+/* --- Tata Letak Filter Kontrol Baru --- */
+.filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.search-group {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    min-width: 350px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0 12px;
+}
+
+.search-group svg {
+    width: 20px;
+    height: 20px;
+    fill: #6c757d;
+    margin-right: 8px;
 }
 
 .filter-input {
     width: 100%;
-    padding: 10px 15px;
+    padding: 12px 0;
     font-size: 1rem;
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+.actions-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.date-input {
+    padding: 10px 14px;
+    font-size: 0.9rem;
     border: 1px solid #ced4da;
     border-radius: 6px;
-    box-sizing: border-box;
+    max-width: 150px;
 }
-/* -------------------------------- */
 
+/* --- Perbaikan Tampilan Tabel --- */
 .data-table {
     width: 100%;
     border-collapse: collapse;
 }
 
 .data-table th, .data-table td {
-    padding: 14px 15px; /* Padding diperbesar */
+    padding: 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
 }
 
 .data-table th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: #ffffff; /* Latar belakang solid */
-    font-weight: 600; /* Dibuat lebih tebal */
-    color: #495057;
-    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #343a40;
+    font-size: 0.85rem;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
+.data-table th:first-child {
+    border-top-left-radius: 8px;
+}
+.data-table th:last-child {
+    border-top-right-radius: 8px;
 }
 
 .data-table tbody tr:hover {
-    background-color: #f8f9fa; /* Efek hover pada baris */
+    background-color: #f1f3f5;
 }
 
-/* --- STYLE BARU UNTUK KOLOM AKSI --- */
+/* --- Style Ikon Aksi & Badge Status --- */
 .log-action {
     display: flex;
     align-items: center;
     gap: 10px;
     font-weight: 500;
 }
-.date-filter-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.purge-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 1rem;
-}
-
-.btn-danger-outline {
-    background-color: transparent;
-    border: 1px solid #dc3545;
-    color: #dc3545;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.btn-danger-outline:hover {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-    border: 1px solid #dc3545;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-}
-/* ---------------------------------- */
 
 .log-target {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem;
-    color: #6c757d;
+    color: #495057;
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .log-time {
     font-size: 0.9rem;
     color: #6c757d;
+    white-space: nowrap;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 12px; /* Dibuat lebih bulat */
+    padding: 5px 10px;
+    border-radius: 16px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
+    text-align: center;
 }
 .status-berhasil {
     background-color: #d1e7dd;
@@ -133,29 +137,20 @@
     background-color: #f8d7da;
     color: #842029;
 }
-.filter-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap; /* Agar responsif di layar kecil */
-    gap: 1rem;
+
+/* --- Tambahan: Memberi Warna pada Ikon Aksi --- */
+.icon-create {
+    color: #28a745; /* Warna Hijau untuk aksi membuat/mengunggah */
 }
 
-.text-filter-group {
-    flex-grow: 1;
-    min-width: 300px;
+.icon-update {
+    color: #0d6efd; /* Warna Biru untuk aksi mengubah */
 }
 
-.date-filter-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.icon-delete {
+    color: #dc3545; /* Warna Merah untuk aksi menghapus */
 }
 
-.date-input {
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
+.icon-restore {
+    color: #fd7e14; /* Warna Oranye untuk aksi memulihkan */
 }
