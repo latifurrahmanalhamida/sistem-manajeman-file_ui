@@ -5,7 +5,7 @@ import { FaUpload } from 'react-icons/fa';
 import Notification from '../Notification/Notification';
 import ProgressModal from '../Modal/ProgressModal';
 
-const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFolderId = null }) => {
+const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFolderId = null, divisionId = null }) => {
     const [uploadQueue, setUploadQueue] = useState([]); // Array to manage multiple file uploads
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
@@ -16,7 +16,7 @@ const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFo
         type: ''
     });
 
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false); // Control visibility of ProgressModal
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
     const MAX_SIZE_BYTES = 512000 * 1024; // 512MB
     const ALLOWED_FILE_TYPES = [
@@ -82,12 +82,10 @@ const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFo
         for (let i = 0; i < uploadQueue.length; i++) {
             let fileItem = uploadQueue[i];
 
-            // Skip if already completed, failed, or canceled
             if (fileItem.status === 'completed' || fileItem.status === 'failed' || fileItem.status === 'canceled') {
                 continue;
             }
 
-            // Update status to uploading
             setUploadQueue(prevQueue =>
                 prevQueue.map(item =>
                     item.id === fileItem.id ? { ...item, status: 'uploading' } : item
@@ -98,6 +96,8 @@ const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFo
             formData.append('file', fileItem.file);
             if (currentFolderId) {
                 formData.append('folder_id', currentFolderId);
+            } else if (divisionId) {
+                formData.append('division_id', divisionId);
             }
 
             try {
@@ -187,7 +187,7 @@ const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFo
 
     return (
         <>
-            <div class="upload-form-container">
+            <div className="upload-form-container">
                 <form onSubmit={handleSubmit}>
                     <div
                         className={`drop-zone ${isDragging ? 'is-active' : ''}`}
@@ -203,12 +203,12 @@ const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFo
                             style={{ display: 'none' }}
                             ref={fileInputRef}
                         />
-                        <div class="drop-zone-icon"><FaUpload /></div>
+                        <div className="drop-zone-icon"><FaUpload /></div>
                         <p>Seret & lepas file di sini, atau klik untuk memilih file</p>
                     </div>
 
                     {uploadQueue.length > 0 && (
-                        <div class="file-preview">
+                        <div className="file-preview">
                             <p>{uploadQueue.length} file terpilih: {uploadQueue.map(f => f.file?.name).join(', ')}</p>
                         </div>
                     )}
@@ -229,13 +229,12 @@ const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFo
 
             <ProgressModal
                 isOpen={isUploadModalOpen}
-                filesToUpload={uploadQueue} // Pass the entire queue
-                onCancel={handleCancelUpload} // Pass the cancel handler
-                onClose={() => setIsUploadModalOpen(false)} // Allow closing if needed, or remove if modal auto-closes
+                filesToUpload={uploadQueue}
+                onCancel={handleCancelUpload}
+                onClose={() => setIsUploadModalOpen(false)}
             />
         </>
     );
 }
 
 export default FileUploadForm;
-

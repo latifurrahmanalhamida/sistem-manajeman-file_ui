@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { downloadFile, deleteFile, toggleFavorite, uploadFile, renameFile } from '../services/api';
+import { downloadFile, deleteFile, toggleFavorite, uploadFile, renameFile, getDivisions } from '../services/api'; // Import getDivisions
 import { getDivisionsWithFolders } from '../services/api';
 import FolderCard from '../components/FolderCard/FolderCard';
 import './DashboardView.css';
@@ -13,25 +13,23 @@ import ConfirmationModal from '../components/ConfirmationModal/ConfirmationModal
 import Notification from '../components/Notification/Notification';
 import FileCard from '../components/FileCard/FileCard';
 import FilePreviewModal from '../components/FilePreviewModal/FilePreviewModal';
-import SortControls from '../components/SortControls/SortControls'; // Import SortControls
+import SortControls from '../components/SortControls/SortControls';
+import CustomDropdown from '../components/CustomDropdown/CustomDropdown';
 
-import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave, FaPencilAlt } from 'react-icons/fa';
+import { FaPlus, FaDownload, FaTrash, FaStar, FaRegStar, FaEye, FaTimes, FaSave, FaPencilAlt, FaArrowLeft } from 'react-icons/fa'; // Import FaArrowLeft
 import getFileIcon from '../utils/fileIcons';
 import { truncateFilename } from '../utils/formatters';
 
-
 // --- Komponen Dashboard untuk Super Admin ---
 
-const SuperAdminDashboard = () => {
+const SuperAdminDashboard = ({ onSelectDivision }) => {
     const { user } = useAuth();
     const [divisions, setDivisions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [selectedFolderId, setSelectedFolderId] = useState(null);
     const [notification, setNotification] = useState({ isOpen: false, message: '', type: '' });
 
     useEffect(() => {
-        const fetchDivisions = async () => {
+        const fetchDivisionsData = async () => {
             try {
                 const response = await getDivisionsWithFolders();
                 setDivisions(response.data);
@@ -41,12 +39,11 @@ const SuperAdminDashboard = () => {
                 setLoading(false);
             }
         };
-        fetchDivisions();
+        fetchDivisionsData();
     }, []);
 
-    const handleUploadComplete = () => {
-        setIsUploadModalOpen(false);
-        setNotification({ isOpen: true, message: 'File berhasil diunggah!', type: 'success' });
+    const handleDivisionSelect = (division) => {
+        onSelectDivision(division);
     };
 
     if (loading) return <div>Loading data divisi...</div>;
@@ -54,11 +51,12 @@ const SuperAdminDashboard = () => {
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
-                <h1>Super Admin Dashboard</h1>
-                <p>Selamat Datang, <strong>{user?.name}</strong></p>
-                <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
-                    <FaPlus size={14} /> <span>Upload File ke Folder Manapun</span>
-                </button>
+                <h1>{user?.name} Dashboard</h1>
+                <CustomDropdown
+                    options={divisions}
+                    onSelect={handleDivisionSelect}
+                    triggerText="Pilih Divisi"
+                />
             </div>
             {divisions.map(division => (
                 <section key={division.id} style={{ marginBottom: '2rem' }}>
@@ -66,7 +64,7 @@ const SuperAdminDashboard = () => {
                     <div className="folders-grid">
                         {division.folders && division.folders.length > 0 ? (
                             division.folders.map(folder => (
-                                <FolderCard key={folder.id} folder={folder} />
+                                <FolderCard key={folder.id} folder={folder} onClick={() => onSelectDivision(division)} />
                             ))
                         ) : (
                             <p style={{ color: '#888' }}>Belum ada folder di divisi ini.</p>
@@ -74,22 +72,7 @@ const SuperAdminDashboard = () => {
                     </div>
                 </section>
             ))}
-
-            <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File ke Folder Manapun">
-                <div>
-                    <label htmlFor="folder-select">Pilih Folder Tujuan:</label>
-                    <select id="folder-select" value={selectedFolderId || ''} onChange={e => setSelectedFolderId(e.target.value)} style={{ width: '100%', marginBottom: '1rem' }}>
-                        <option value="">-- Pilih Folder --</option>
-                        {divisions.map(division => (
-                            division.folders && division.folders.map(folder => (
-                                <option key={folder.id} value={folder.id}>{division.name} - {folder.name}</option>
-                            ))
-                        ))}
-                    </select>
-                    <FileUploadForm onUploadComplete={handleUploadComplete} currentFolderId={selectedFolderId} />
-                </div>
-            </Modal>
-
+            
             {notification.isOpen && (
                 <Notification
                     message={notification.message}
@@ -103,20 +86,17 @@ const SuperAdminDashboard = () => {
 
 
 // --- Komponen Dashboard untuk Admin/User Devisi ---
-// Helper function untuk format ukuran bytes
 
-const DivisionUserDashboard = () => {
+const DivisionUserDashboard = ({ viewingAsAdminForDivision, onExitAdminView }) => {
     const { user, searchQuery, loading: authLoading } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const [currentFolderId, setCurrentFolderId] = useState(null);
-    // const [breadcrumbs, setBreadcrumbs] = useState([]);
-    // const [currentFolder, setCurrentFolder] = useState(null);
     const [folders, setFolders] = useState([]);
     const [files, setFiles] = useState([]);
     const [breadcrumbs, setBreadcrumbs] = useState([]);
     const [isFilesLoading, setIsFilesLoading] = useState(true);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [selectedFolderId, setSelectedFolderId] = useState(null); // Untuk dropdown folder tujuan upload
+    const [selectedFolderId, setSelectedFolderId] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
     const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
@@ -124,21 +104,25 @@ const DivisionUserDashboard = () => {
     const [viewMode, setViewMode] = useState('list');
     const [previewFile, setPreviewFile] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-    // State untuk modal overwrite dan rename
     const [overwriteModal, setOverwriteModal] = useState({ isOpen: false, file: null, message: '' });
-        const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '', extension: '' });
+    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '', extension: '' });
     const [renameUploadModal, setRenameUploadModal] = useState({ isOpen: false, file: null, newName: '' });
-    const [sortBy, setSortBy] = useState('updated_at'); // Default sort by updated_at
-    const [sortOrder, setSortOrder] = useState('desc'); // Default sort order descending
-    const [selectedFileIds, setSelectedFileIds] = useState([]); // New state for selected file IDs
-    // const rootLabel = user?.division?.name ? `${user.division.name} Drive` : 'My Drive';
+    const [sortBy, setSortBy] = useState('updated_at');
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [selectedFileIds, setSelectedFileIds] = useState([]);
 
     const fetchFiles = React.useCallback(async () => {
         setIsFilesLoading(true);
         try {
             const folder_id = searchParams.get('folder_id');
-            const url = folder_id ? `/files?folder_id=${folder_id}` : '/files';
+            let url = folder_id ? `/files?folder_id=${folder_id}` : '/files';
+            
+            // Jika super admin sedang melihat divisi lain, tambahkan division_id ke URL
+            if (viewingAsAdminForDivision) {
+                const separator = url.includes('?') ? '&' : '?';
+                url += `${separator}division_id=${viewingAsAdminForDivision.id}`;
+            }
+
             const res = await fetch(process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}${url}` : `http://localhost:8000/api${url}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
             });
@@ -151,17 +135,17 @@ const DivisionUserDashboard = () => {
         } finally {
             setIsFilesLoading(false);
         }
-    }, [searchParams]);
+    }, [searchParams, viewingAsAdminForDivision]);
 
     useEffect(() => {
         if (!authLoading && user) {
-            // Sinkronkan state currentFolderId dengan URL
             const fid = searchParams.get('folder_id');
             setCurrentFolderId(fid ? parseInt(fid, 10) : null);
             fetchFiles();
         }
     }, [authLoading, user, searchParams, fetchFiles]);
 
+    // ... (sisa fungsi-fungsi handler seperti handleDownload, handleDeleteClick, dll. tetap sama) ...
     const handleDownload = async (file) => {
         try {
             const response = await downloadFile(file.id);
@@ -198,23 +182,16 @@ const DivisionUserDashboard = () => {
         }
     };
     
-    // --- FUNGSI BARU DIMASUKKAN DI SINI ---
     const handlePreview = async (file) => {
         try {
             console.log(`Mencoba memuat pratinjau untuk file: ${file.nama_file_asli}`);
             const response = await downloadFile(file.id);
-
-            // Defensive Check 1: Pastikan respons ada
             if (!response) {
                 throw new Error("Tidak ada respons dari server.");
             }
-
-            // Defensive Check 2: Pastikan respons berisi data biner (Blob)
             if (!(response.data instanceof Blob)) {
                  throw new Error("Server tidak mengembalikan data file. Kemungkinan terjadi error di backend.");
             }
-
-            // Defensive Check 3: Pastikan blob tidak kosong
             if (response.data.size === 0) {
                 throw new Error("Data file kosong atau tidak valid dari server.");
             }
@@ -226,7 +203,6 @@ const DivisionUserDashboard = () => {
             setIsPreviewOpen(true);
 
         } catch (error) {
-            // Tangani semua kemungkinan error di sini
             console.error('GAGAL MEMUAT PRATINJAU:', error);
             
             let errorMessage = 'Gagal memuat data pratinjau. Silakan coba lagi.';
@@ -247,14 +223,13 @@ const DivisionUserDashboard = () => {
         setIsPreviewOpen(false);
         setPreviewFile(null);
     };
-    // --- AKHIR DARI FUNGSI BARU ---
 
     const confirmDelete = async () => {
         if (!fileToDelete) return;
         try {
             await deleteFile(fileToDelete.id);
             setNotification({ isOpen: true, message: 'File berhasil dipindahkan ke sampah.', type: 'success' });
-            fetchFiles(); // Refresh list file
+            fetchFiles();
         } catch (error) {
             console.error('Delete error:', error.response ? error.response.data : error.message);
             setNotification({ isOpen: true, message: 'Gagal menghapus file.', type: 'error' });
@@ -272,14 +247,12 @@ const DivisionUserDashboard = () => {
 
     const handleConflict = (file, message) => {
         setOverwriteModal({ isOpen: true, file: file, message: message });
-        setIsUploadModalOpen(false); // Tutup modal upload
+        setIsUploadModalOpen(false);
     };
 
     const handleRenameClick = (file) => {
-        // Perbaikan: Cari file dari files berdasarkan nama asli jika id tidak ada
         let targetFile = file;
         if (!file || !file.id) {
-            // Cek jika file punya properti file.name (dari upload/overwrite)
             const fileName = file?.file?.name || file?.name;
             if (fileName) {
                 targetFile = files.find(f => f.nama_file_asli === fileName);
@@ -412,31 +385,35 @@ const executeUpload = async (file, options = {}) => {
         if (fid) {
             formData.append('folder_id', fid);
         }
+
+        // FIX: Tambahkan division_id jika super admin upload ke drive divisi lain
+        if (viewingAsAdminForDivision) {
+            formData.append('division_id', viewingAsAdminForDivision.id);
+        }
+
         await uploadFile(formData, options);
-        const successMessage = options.overwrite ? 'File berhasil ditimpa!' : (options.newName ? 'File berhasil diunggah dengan nama baru!' : 'File berhasil diunggah!');
+        const successMessage = options.overwrite
+            ? 'File berhasil ditimpa!'
+            : (options.newName
+                ? 'File berhasil diunggah dengan nama baru!'
+                : 'File berhasil diunggah!');
         setNotification({ isOpen: true, message: successMessage, type: 'success' });
         fetchFiles();
     } catch (err) {
-        // --- PERUBAHAN UTAMA ADA DI SINI ---
         if (err.response) {
-            // Jika error karena konflik nama (409)
             if (err.response.status === 409) {
                 handleConflict(file, err.response.data.message);
-            // Jika error karena kuota penuh (403)
             } else if (err.response.status === 403) {
-                // Tampilkan pesan spesifik dari backend
-                setNotification({ 
-                    isOpen: true, 
-                    message: err.response.data.message || 'Gagal: Kuota penyimpanan penuh.', 
-                    type: 'error' 
+                setNotification({
+                    isOpen: true,
+                    message: err.response.data.message || 'Gagal: Kuota penyimpanan penuh.',
+                    type: 'error'
                 });
-            // Untuk semua error server lainnya
             } else {
                 console.error('Upload error:', err.response.data);
                 setNotification({ isOpen: true, message: 'Gagal mengunggah file. Terjadi masalah di server.', type: 'error' });
             }
         } else {
-            // Untuk error jaringan atau lainnya
             console.error('Upload error:', err.message);
             setNotification({ isOpen: true, message: 'Gagal mengunggah file. Periksa koneksi Anda.', type: 'error' });
         }
@@ -478,18 +455,26 @@ const executeUpload = async (file, options = {}) => {
     if (authLoading) return <div>Loading user data...</div>;
     if (isFilesLoading) return <div>Loading files...</div>;
 
+    const driveName = viewingAsAdminForDivision 
+        ? `${viewingAsAdminForDivision.name} Drive` 
+        : (user?.division?.name ? `${user.division.name} Drive` : 'My Drive');
+
     return (
         <div className="division-dashboard">
             <div className="dashboard-content">
                 <div className="dashboard-toolbar">
-                    <h1>{user?.division?.name || 'File Divisi'}</h1>
+                    {viewingAsAdminForDivision && (
+                        <button onClick={onExitAdminView} className="back-button" style={{ marginRight: '1rem' }}>
+                            <FaArrowLeft />
+                        </button>
+                    )}
+                    <h1>{driveName}</h1>
                     <button className="upload-button" onClick={() => setIsUploadModalOpen(true)}>
                         <FaPlus size={14} /> <span>Tambah File</span>
                     </button>
                 </div>
 
                 <div className="controls-container">
-                    {/* Tombol List/Grid untuk file */}
                     <div className="view-toggle" style={{ marginBottom: '1rem' }}>
                         <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''}>List</button>
                         <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}>Grid</button>
@@ -504,17 +489,12 @@ const executeUpload = async (file, options = {}) => {
                                 <>
                                     <button className="action-button" onClick={() => {
                                         const fileToPreview = files.find(f => f.id === selectedFileIds[0]);
-                                        if (fileToPreview) {
-                                            handlePreview(fileToPreview);
-                                        }
+                                        if (fileToPreview) handlePreview(fileToPreview);
                                     }}><FaEye /></button>
                                     <button className="action-button" onClick={() => {
                                         const fileToRename = files.find(f => f.id === selectedFileIds[0]);
-                                        if (fileToRename) {
-                                            handleRenameClick(fileToRename);
-                                        } else {
-                                            setNotification({ isOpen: true, message: 'File yang ingin diganti namanya tidak ditemukan.', type: 'error' });
-                                        }
+                                        if (fileToRename) handleRenameClick(fileToRename);
+                                        else setNotification({ isOpen: true, message: 'File yang ingin diganti namanya tidak ditemukan.', type: 'error' });
                                     }}><FaPencilAlt /></button>
                                 </>
                             )}
@@ -522,13 +502,11 @@ const executeUpload = async (file, options = {}) => {
                     ) : (
                         <SortControls sortBy={sortBy} sortOrder={sortOrder} onSortChange={handleSortChange} />
                     )}
-                    {/* Hapus view-toggle untuk folder, hanya file yang bisa list/grid */}
                 </div>
 
-                {/* Breadcrumb Section */}
                 <div className="breadcrumbs" style={{ marginBottom: '1rem', fontSize: '1rem' }}>
                     <span className="breadcrumb-item" style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => { setSearchParams({}); setCurrentFolderId(null); }}>
-                        {user?.division?.name ? `${user.division.name} Drive` : 'My Drive'}
+                        {driveName}
                     </span>
                     {breadcrumbs.map((bc, idx) => (
                         <span key={bc.id} className="breadcrumb-item" style={{ cursor: 'pointer' }} onClick={() => { setSearchParams({ folder_id: bc.id }); setCurrentFolderId(bc.id); }}>
@@ -537,7 +515,6 @@ const executeUpload = async (file, options = {}) => {
                     ))}
                 </div>
 
-                {/* Folder Section: Selalu Grid, tanpa opsi List */}
                 {folders && folders.length > 0 && (
                     <section className="folder-section">
                         <h2>Folders</h2>
@@ -613,7 +590,13 @@ const executeUpload = async (file, options = {}) => {
             </div>
 
             <Modal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} title="Upload File Baru">
-                <FileUploadForm onUploadComplete={handleUploadComplete} onConflict={handleConflict} onUploadError={handleUploadError} currentFolderId={currentFolderId} />
+                <FileUploadForm 
+                    onUploadComplete={handleUploadComplete} 
+                    onConflict={handleConflict} 
+                    onUploadError={handleUploadError} 
+                    currentFolderId={currentFolderId}
+                    divisionId={viewingAsAdminForDivision?.id}
+                />
             </Modal>
 
             <ConfirmationModal
@@ -729,9 +712,18 @@ const executeUpload = async (file, options = {}) => {
 // --- Komponen Utama DashboardPage ---
 const DashboardPage = () => {
     const { user } = useAuth();
-    if (user?.role === 'super_admin') {
-        return <SuperAdminDashboard />;
+    const [viewingDivision, setViewingDivision] = useState(null); // State untuk melacak divisi yang dilihat admin
+
+    if (user?.role?.name === 'super_admin') {
+        if (viewingDivision) {
+            return <DivisionUserDashboard 
+                        viewingAsAdminForDivision={viewingDivision} 
+                        onExitAdminView={() => setViewingDivision(null)} 
+                    />;
+        }
+        return <SuperAdminDashboard onSelectDivision={setViewingDivision} />;
     }
+    
     return <DivisionUserDashboard />;
 };
 

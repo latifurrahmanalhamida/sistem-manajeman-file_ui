@@ -2,15 +2,62 @@
 
 .kelola-divisi-page .page-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-top: 1rem;
 }
 
 .kelola-divisi-page .page-header h1 {
     margin: 0;
     font-size: 1.8rem;
 }
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.back-button:hover {
+    color: #0d6efd;
+}
+
+
+.kelola-divisi-page{
+    max-height: 70vh;
+    max-width: 1100px;
+}
+
+/* Style untuk search bar */
+.search-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    flex-grow: 1; /* Make search input take available space */
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
 
 /* Menggunakan kembali style .btn dan .btn-primary dari ManajemenPage */
 .btn {
@@ -24,6 +71,7 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
+    white-space: nowrap; /* Prevent buttons from wrapping text */
 }
 
 .btn-primary {
@@ -104,7 +152,7 @@
     border-radius: 6px;
     border: 1px solid #f5c2c7;
 }
-.page-header .header-actions {
+.header-actions { /* Removed .page-header selector */
     display: flex;
     gap: 10px;
 }
