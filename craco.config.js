@@ -1,16 +1,13 @@
+// craco.config.js
+
 module.exports = {
   webpack: {
     configure: (webpackConfig) => {
-      // Menambahkan aturan untuk mengabaikan peringatan source map dari pustaka tertentu
-      webpackConfig.module.rules.push({
-        test: /\.js$/,
-        enforce: 'pre',
-        use: ['source-map-loader'],
-        exclude: [
-          // Abaikan peringatan dari docx-preview
-          /node_modules\/docx-preview/
-        ],
-      });
+      // Menambahkan konfigurasi untuk mengabaikan source map warnings dari docx-preview
+      webpackConfig.ignoreWarnings = [
+        ...(webpackConfig.ignoreWarnings || []),
+        /Failed to parse source map from '.*docx-preview.*'/,
+      ];
       return webpackConfig;
     },
   },
