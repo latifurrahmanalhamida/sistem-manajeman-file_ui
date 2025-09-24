@@ -49,6 +49,9 @@ export const getRoles = () => apiClient.get('/admin/roles');
 export const getDivisions = () => apiClient.get('/admin/divisions');
 export const getDivisionsWithFolders = () => apiClient.get('/admin/divisions-with-folders');
 
+// Activity Log
+export const getDivisionActivityLogs = () => apiClient.get('/admin/activity-logs/division');
+
 // File Management
 export const getFiles = () => apiClient.get('/files');
 export const uploadFile = (formData, options = {}, config = {}) => {

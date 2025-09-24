@@ -21,6 +21,7 @@ import TrashPage from './pages/TrashPage';
 import EditUserPage from './pages/EditUserPage';
 import TrashUserPage from './pages/TrashUserPage';
 import KelolaFolderPage from './pages/KelolaFolderPage';
+import DivisionActivityLogPage from './pages/DivisionActivityLogPage';
 
 
 // --- IMPORT BARU UNTUK SUPER ADMIN ---
@@ -116,6 +117,7 @@ const AdminPanelRoutes = () => (
             <Route path="/users/edit/:userId" element={<EditUserPage />} />
             <Route path="/users/trash" element={<TrashUserPage />} /> 
             <Route path="/folders" element={<KelolaFolderPage />} />
+            <Route path="/activities" element={<DivisionActivityLogPage />} />
             <Route path="*" element={<Navigate to="/panel-admin/users" replace />} />
         </Routes>
     </AdminPanelLayout>
