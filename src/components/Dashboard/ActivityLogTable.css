@@ -1,21 +1,23 @@
-/* src/components/Dashboard/ActivityLogTable.css - VERSI BARU */
+/* src/components/Dashboard/ActivityLogTable.css */
 
-/* --- Wrapper Utama dengan Gaya Kartu --- */
+/* --- Main Wrapper Card Style --- */
 .table-wrapper {
     background-color: #fff;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    width: 100%; /* Menggunakan lebar penuh */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
     box-sizing: border-box;
 }
 .table-container {
-    max-height: 65vh; /* Batasi tinggi tabel, sesuaikan nilainya jika perlu */
-    overflow-y: auto; /* Tambahkan scroll vertikal HANYA jika kontennya melebihi max-height */
+    max-height: 65vh;
+    overflow-x: auto;
+    overflow-y: auto;
     width: 100%;
+    padding-top: 0%;
 }
 
-/* --- Tata Letak Filter Kontrol Baru --- */
+/* --- New Filter Controls Layout --- */
 .filter-controls {
     display: flex;
     justify-content: space-between;
@@ -26,20 +28,24 @@
 }
 
 .search-group {
+    flex-grow: 1;
     display: flex;
     align-items: center;
-    flex-grow: 1;
     min-width: 350px;
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 0 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-group:focus-within {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
 .search-group svg {
-    width: 20px;
-    height: 20px;
-    fill: #6c757d;
+    color: #6c757d;
     margin-right: 8px;
 }
 
@@ -67,14 +73,13 @@
     max-width: 150px;
 }
 
-/* --- Perbaikan Tampilan Tabel --- */
+/* --- Improved Table Styles --- */
 .data-table {
     width: 100%;
     border-collapse: collapse;
 }
 
 .data-table th, .data-table td {
-    padding: 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
@@ -88,24 +93,41 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-.data-table th:first-child {
-    border-top-left-radius: 8px;
-}
-.data-table th:last-child {
-    border-top-right-radius: 8px;
-}
 
 .data-table tbody tr:hover {
     background-color: #f1f3f5;
 }
 
-/* --- Style Ikon Aksi & Badge Status --- */
+/* --- Action Icon & Status Badge Styles --- */
 .log-action {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 500;
 }
+
+.action-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.action-icon-wrapper svg {
+    color: #fff;
+    width: 16px;
+    height: 16px;
+}
+
+.action-icon-wrapper.create { background-color: #28a745; }
+.action-icon-wrapper.update { background-color: #0d6efd; }
+.action-icon-wrapper.delete { background-color: #dc3545; }
+.action-icon-wrapper.restore { background-color: #fd7e14; }
+.action-icon-wrapper.default { background-color: #6c757d; }
+
 
 .log-target {
     font-family: 'Courier New', Courier, monospace;
@@ -123,34 +145,20 @@
 }
 
 .status-badge {
-    padding: 5px 10px;
-    border-radius: 16px;
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
     text-align: center;
+    white-space: nowrap;
 }
+
 .status-berhasil {
     background-color: #d1e7dd;
     color: #0f5132;
 }
+
 .status-gagal {
     background-color: #f8d7da;
     color: #842029;
-}
-
-/* --- Tambahan: Memberi Warna pada Ikon Aksi --- */
-.icon-create {
-    color: #28a745; /* Warna Hijau untuk aksi membuat/mengunggah */
-}
-
-.icon-update {
-    color: #0d6efd; /* Warna Biru untuk aksi mengubah */
-}
-
-.icon-delete {
-    color: #dc3545; /* Warna Merah untuk aksi menghapus */
-}
-
-.icon-restore {
-    color: #fd7e14; /* Warna Oranye untuk aksi memulihkan */
 }
