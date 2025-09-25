@@ -8,7 +8,7 @@ const AdminSidebar = () => {
         <aside className="sidebar">
             <div>
                 <div className="sidebar-header">
-                    <img src="/images/DAOP7DRVE.svg" alt="Logo Panel Admin" className="sidebar-logo" />
+                    <img src={process.env.PUBLIC_URL + '/images/DAOP7DRVE.svg'} alt="Logo Panel Admin" className="sidebar-logo" />
                 </div>
                 {/* PERUBAHAN: Menyamakan struktur dengan NavLink */}
                 <nav className="sidebar-nav">

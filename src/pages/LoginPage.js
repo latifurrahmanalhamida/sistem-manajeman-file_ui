@@ -66,8 +66,8 @@ const LoginPage = () => {
         <div className="login-page">
             <div className="left-pane">
                 <div className="overlay">
-                    <img src="/images/KAIwhite.svg" alt="KAI Logo" className="overlay-title" />
-                    <img src="/images/DAOP7DRV.svg" alt="DAOP7DRV Logo" className="overlay-subtitle daop7drv-logo" />
+                    <img src={process.env.PUBLIC_URL + '/images/KAIwhite.svg'} alt="KAI Logo" className="overlay-title" />
+                    <img src={process.env.PUBLIC_URL + '/images/DAOP7DRV.svg'} alt="DAOP7DRV Logo" className="overlay-subtitle daop7drv-logo" />
                     <p className="overlay-subtitle">PT. Kereta Api Indonesia<br></br> Daerah Operasi 7 Madiun</p>
                 </div>
             </div>
