@@ -1,7 +1,8 @@
 import { useState } from "react";
-import SuperAdminBackupPage from "./SuperAdminBackupPage";
+// Impor komponen dari kedua branch
+import BackupPage from "./BackupPage";
 import DivisionQuotaPage from "./DivisionQuotaPage";
-import "./SuperAdminPengaturanPage.css"; // ✅ import CSS
+import "./SuperAdminPengaturanPage.css";
 
 export default function SuperAdminPengaturanPage() {
   const [activeTab, setActiveTab] = useState("general");
@@ -10,7 +11,7 @@ export default function SuperAdminPengaturanPage() {
     <div className="settings-container">
       <h1 className="settings-title">⚙️ Pengaturan</h1>
 
-      {/* Tab Menu */}
+      {/* Tab Menu yang sudah digabung */}
       <div className="tab-menu">
         <button
           className={`tab-btn ${activeTab === "general" ? "active" : ""}`}
@@ -24,8 +25,7 @@ export default function SuperAdminPengaturanPage() {
         >
           Backup Data
         </button>
-
-        {/* 2. TAMBAHKAN TOMBOL TAB BARU DI SINI */}
+        {/* Tombol tab "Kuota Divisi" dari branch production_ui ditambahkan kembali */}
         <button
           className={`tab-btn ${activeTab === "quota" ? "active" : ""}`}
           onClick={() => setActiveTab("quota")}
@@ -34,16 +34,18 @@ export default function SuperAdminPengaturanPage() {
         </button>
       </div>
 
-      {/* Isi Konten */}
+      {/* Isi Konten yang sudah digabung */}
       <div className="tab-content">
         {activeTab === "general" && (
           <div>
             <p>⚙️ Pengaturan umum sistem ditaruh di sini...</p>
           </div>
         )}
-        {activeTab === "backup" && <SuperAdminBackupPage />}
 
-        {/* 3. TAMBAHKAN KONTEN UNTUK TAB BARU DI SINI */}
+        {/* Gunakan komponen BackupPage yang baru dari feature/backup-fix */}
+        {activeTab === "backup" && <BackupPage />}
+        
+        {/* Konten untuk tab "Kuota Divisi" dari production_ui ditambahkan kembali */}
         {activeTab === "quota" && <DivisionQuotaPage />}
       </div>
     </div>

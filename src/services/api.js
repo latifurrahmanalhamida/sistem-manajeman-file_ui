@@ -19,6 +19,17 @@ apiClient.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
+// --- HELPER: Ambil CSRF Cookie untuk Sanctum SPA --- //
+export const ensureCsrfCookie = async () => {
+  try {
+    await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
+      withCredentials: true,
+    });
+  } catch (err) {
+    console.error("Gagal ambil CSRF cookie:", err);
+  }
+};
+
 // --- SEMUA FUNGSI API ANDA ---
 export const loginUser = (credentials) => apiClient.post('/login', credentials);
 export const logoutUser = () => apiClient.post('/logout');
@@ -72,6 +83,68 @@ export const uploadFile = (formData, options = {}, config = {}) => {
 };
 export const downloadFile = (fileId) => apiClient.get(`/files/${fileId}`, { responseType: 'blob' });
 export const deleteFile = (fileId) => apiClient.delete(`/files/${fileId}`); // Soft delete
+
+
+// Ambil daftar backup
+export const fetchBackups = () => {
+  return apiClient.get("/backups"); // Gunakan endpoint jamak (plural)
+}
+
+// Jalankan backup manual
+export const createBackup = () => {
+  return apiClient.post("/backup/run");
+};
+
+// Download backup berdasarkan ID
+// export const downloadBackup = (id) =>
+//   apiClient.get(`/backup/download/${id}`, {
+//     responseType: "blob",
+//     headers: {
+//       "Cache-Control": "no-cache",
+//       "Pragma": "no-cache",
+//       "Accept": "application/zip",   // penting
+//       "Range": "bytes=0-",           // minta full file dari awal
+//     },
+//   });
+
+export const downloadBackup = (id) =>
+  apiClient.get(`/backup/download/${id}`, { responseType: "blob" });
+
+// export const downloadBackup = (id) => {
+//   return apiClient.get(`/backup/download/${id}`, {
+//     responseType: "blob",
+//   });
+// };
+
+// Hapus backup berdasarkan ID
+export const deleteBackup = (id) => {
+  return apiClient.delete(`/backups/${id}`); // Gunakan endpoint jamak (plural)
+};
+
+// Ambil setting backup
+export const fetchBackupSettings = async () => {
+  await ensureCsrfCookie(); // wajib untuk Sanctum SPA
+  const res = await apiClient.get("/backup/settings");
+  return res.data;
+};
+
+// Update setting backup
+export const updateBackupSettings = async (backup_path) => {
+  await ensureCsrfCookie(); // wajib
+  const res = await apiClient.post("/backup/settings", { backup_path });
+  return res.data;
+};
+
+export const fetchBackupSchedule = async () => {
+  await ensureCsrfCookie(); // wajib untuk Sanctum SPA
+  const res = await apiClient.get("/backup/schedule");
+  return res.data;
+}
+export const updateBackupSchedule = async (schedule) => {
+  await ensureCsrfCookie(); // wajib
+  const res = await apiClient.post("/backup/schedule", schedule );
+  return res.data;
+};
 
 // Sidebar File Features
 export const getRecentFiles = () => apiClient.get('/files/recent');

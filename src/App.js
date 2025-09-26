@@ -23,12 +23,10 @@ import TrashUserPage from './pages/TrashUserPage';
 import KelolaFolderPage from './pages/KelolaFolderPage';
 import DivisionActivityLogPage from './pages/DivisionActivityLogPage';
 
-
 // --- IMPORT BARU UNTUK SUPER ADMIN ---
 import SuperAdminLayout from './components/Layout/SuperAdminLayout';
 import SuperAdminBeranda from './pages/SuperAdminBeranda';
 import SuperAdminPengaturanPage from './pages/SuperAdminPengaturanPage';
-// import SuperAdminBackupPage from './pages/SuperAdminPengaturanPage'; // 🚀 import baru
 import SuperAdminBackupPage from './pages/SuperAdminBackupPage';
 import ManajemenPage from './pages/ManajemenPage'; 
 import KelolaDivisiPage from './pages/KelolaDivisiPage';
@@ -180,7 +178,7 @@ function App() {
                 <Route path="kelola-folder-divisi" element={<PilihDivisiPage />} />
                 <Route path="kelola-folder/divisi/:divisionId" element={<KelolaFolderPage />} />
 
-                {/* Dari feature/backup-data-ui */}
+                {/* Dari feature/backup-fix */}
                 <Route path="pengaturan/backup" element={<SuperAdminBackupPage />} />
                 <Route path="pengaturan" element={<SuperAdminPengaturanPage />} />
 
@@ -196,6 +194,5 @@ function App() {
     </AppProvider>
   );
 }
-
 
 export default App;
