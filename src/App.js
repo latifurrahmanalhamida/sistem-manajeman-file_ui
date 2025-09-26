@@ -28,6 +28,8 @@ import ManajemenPage from './pages/ManajemenPage';
 import KelolaDivisiPage from './pages/KelolaDivisiPage';
 import KelolaPenggunaPage from './pages/KelolaPenggunaPage'; 
 import KelolaPenggunaSampahPage from './pages/KelolaPenggunaSampahPage'; 
+import SuperAdminPengaturanPage from './pages/SuperAdminPengaturanPage';
+import BackupPage from './pages/BackupPage';
 // import PengaturanPage from './pages/PengaturanPage'; 
 
 // --- Komponen untuk rute Panel Admin Devisi (Tidak berubah) ---
@@ -92,7 +94,8 @@ function App() {
                             <Route path="manajemen/pengguna" element={<KelolaPenggunaPage />} />
                             <Route path="manajemen/pengguna/sampah" element={<KelolaPenggunaSampahPage />} />
                             {/* <Route path="pengaturan" element={<PengaturanPage />} /> */}
-                            <Route path="*" element={<Navigate to="beranda" replace />} />
+                            <Route path="pengaturan/backup" element={<BackupPage />} />
+                            <Route path="pengaturan" element={<SuperAdminPengaturanPage />} />
                         </Route>
                         
                         {/* Rute terproteksi untuk semua halaman utama lainnya */}

@@ -1,0 +1,180 @@
+/* General Page */
+.backup-page {
+  padding: 2rem;
+  background-color: #f4f6f9;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+}
+
+.page-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin-bottom: 1.8rem;
+  display: flex;
+  align-items: center;
+}
+
+.page-title .icon {
+  margin-right: 0.6rem;
+}
+
+/* Card */
+.card {
+  background-color: #fff;
+  border: 1px solid #e0e6ed;
+  border-radius: 0.6rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+}
+
+.card-header {
+  padding: 1rem 1.25rem;
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e0e6ed;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  color: #34495e;
+}
+
+.card-header .icon {
+  margin-right: 0.5rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Toolbar */
+.toolbar-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.backup-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.status-message {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #28a745;
+}
+
+/* Table */
+.backup-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.backup-table th,
+.backup-table td {
+  padding: 0.8rem 1rem;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.backup-table thead th {
+  background-color: #f1f3f6;
+  font-weight: 600;
+}
+
+.backup-table tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+.backup-table tbody tr:hover {
+  background-color: #eef4fb;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-right: 0.4rem;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Backup Settings */
+.backup-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-card {
+  background: #fafafa;
+  border: 1px solid #e0e6ed;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #2c3e50;
+}
+
+.form-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.4);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+ 
