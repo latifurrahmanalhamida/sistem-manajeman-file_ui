@@ -94,23 +94,24 @@ const LoginHistoryTable = () => {
     const handlePageChange = (newPage) => { if (newPage >= 1 && newPage <= pagination.lastPage) { const params = { start_date: formatDateForAPI(startDate), end_date: formatDateForAPI(endDate) }; fetchHistory(newPage, params); } };
 
     return (
-        <div className="activity-log-table-container">
-            <div className="filter-controls">
-                <div className="search-group" />
-                <div className="actions-group">
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} selectsStart startDate={startDate} endDate={endDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Mulai" className="date-input" isClearable />
-                    <span>-</span>
-                    <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Selesai" className="date-input" isClearable />
-                    <button className="btn btn-primary" onClick={handleFilterSubmit}>Filter</button>
-                    <button className="btn btn-secondary" onClick={handleResetFilter}>Reset</button>
-                    <button className="btn btn-danger" onClick={openPurgeOptionsModal}>Bersihkan Riwayat</button>
+            <div className="table-wrapper"> {/* <-- 1. UBAH CLASS DI SINI */}
+                <div className="filter-controls">
+                    {/* ... Konten filter controls Anda tetap sama ... */}
+                    <div className="search-group" />
+                    <div className="actions-group">
+                        <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} selectsStart startDate={startDate} endDate={endDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Mulai" className="date-input" isClearable />
+                        <span>-</span>
+                        <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} dateFormat="dd/MM/yyyy" placeholderText="Tanggal Selesai" className="date-input" isClearable />
+                        <button className="btn btn-primary" onClick={handleFilterSubmit}>Filter</button>
+                        <button className="btn btn-secondary" onClick={handleResetFilter}>Reset</button>
+                        <button className="btn btn-danger" onClick={openPurgeOptionsModal}>Bersihkan Riwayat</button>
+                    </div>
                 </div>
-            </div>
 
             {loading ? <p>Memuat...</p> : (
                 <>
                     <div className="table-container">
-                        <table className="log-table">
+                       <table className="data-table">
                             <thead>
                                 <tr>
                                     <th>Nama Pengguna</th>

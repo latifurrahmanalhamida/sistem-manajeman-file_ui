@@ -108,38 +108,40 @@ const KelolaPenggunaPage = () => {
     if (loading) return <div>Memuat data pengguna...</div>;
     if (error) return <div className="error-message">{error}</div>;
 
-    return (
-        <>
-            <div className="page-container">
-                <div className="page-header">
-                    <button onClick={() => navigate(-1)} className="back-button">
-                        <FaArrowLeft />
+return (
+    <>
+        <div className="page-container">
+
+            <div className="page-header">
+                <button onClick={() => navigate(-1)} className="back-button">
+                    <FaArrowLeft />
+                </button>
+                <h1>{user?.division?.name ? `${user.division.name} Drive` : 'Kelola Pengguna'}</h1>
+            </div>
+
+            <div className="search-bar-wrapper">
+                <div className="search-group">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
+                    <input
+                        type="text"
+                        placeholder="Cari berdasarkan NIPP, nama, email, atau divisi..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
+                <div className="actions-group">
+                    <Link to="/super-admin/manajemen/pengguna/sampah" className="btn btn-secondary">
+                        <FaTrash /> Arsip Pengguna
+                    </Link>
+                    <button className="btn btn-primary" onClick={handleOpenCreateModal}>
+                        <FaPlus /> Tambah Pengguna
                     </button>
-                    <h1>{user?.division?.name ? `${user.division.name} Drive` : 'Kelola Pengguna'}</h1>
                 </div>
+            </div>
 
-                <div className="search-bar-wrapper">
-                    <div className="search-group">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"></path></svg>
-                        <input
-                            type="text"
-                            placeholder="Cari berdasarkan NIPP, nama, email, atau divisi..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="search-input"
-                        />
-                    </div>
-                    <div className="actions-group">
-                        <Link to="/super-admin/manajemen/pengguna/sampah" className="btn btn-secondary">
-                            <FaTrash /> Arsip Pengguna
-                        </Link>
-                        <button className="btn btn-primary" onClick={handleOpenCreateModal}>
-                            <FaPlus /> Tambah Pengguna
-                        </button>
-                    </div>
-                </div>
-
-                <div className="table-wrapper">
+            <div className="table-wrapper">
+                <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
@@ -178,24 +180,26 @@ const KelolaPenggunaPage = () => {
                 </div>
             </div>
 
-            {/* Render kedua modal di sini */}
-            <PenggunaFormModal
-                isOpen={isFormModalOpen}
-                onClose={handleCloseFormModal}
-                onSave={handleSave}
-                userToEdit={userToEdit}
-            />
+        </div> {/* <-- Penutup untuk 'page-container' */}
 
-            <ConfirmationModal
-                isOpen={isDeleteModalOpen}
-                onClose={handleCloseDeleteModal}
-                onConfirm={confirmDelete}
-                message={`Apakah Anda yakin ingin menghapus pengguna \"${userToDelete?.name}\"?`}
-                isDanger={true}
-                confirmText="Ya, Hapus"
-            />
-        </>
+        {/* Modal dirender di sini, di luar 'page-container' */}
+        <PenggunaFormModal
+            isOpen={isFormModalOpen}
+            onClose={handleCloseFormModal}
+            onSave={handleSave}
+            userToEdit={userToEdit}
+        />
+        <ConfirmationModal
+            isOpen={isDeleteModalOpen}
+            onClose={handleCloseDeleteModal}
+            onConfirm={confirmDelete}
+            message={`Apakah Anda yakin ingin menghapus pengguna \"${userToDelete?.name}\"?`}
+            isDanger={true}
+            confirmText="Ya, Hapus"
+        />
+    </>
     );
+
 };
 
 export default KelolaPenggunaPage;

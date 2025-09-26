@@ -7,6 +7,12 @@
     width: 100%;
     box-sizing: border-box;
 }
+.table-container {
+    max-height: 65vh;
+    overflow-x: auto;
+    overflow-y: auto;
+    width: 100%;
+}
 
 /* --- Tata Letak Filter Kontrol Baru --- */
 .filter-controls {
@@ -40,12 +46,12 @@
 
 /* --- Perbaikan Tampilan Tabel --- */
 /* [PERBAIKAN] Menggunakan nama class yang sama dengan di file JS */
-.log-table {
+.data-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.log-table th, .log-table td {
+.data-table th, .data-table td {
     padding: 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
@@ -53,18 +59,24 @@
     white-space: nowrap;
 }
 
-.log-table th {
+.data-table th {
     background-color: #f8f9fa;
     font-weight: 600;
     color: #343a40;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    
+    /* --- TAMBAHAN PENTING --- */
+    position: sticky; /* Membuat header "lengket" */
+    top: 0;           /* Posisi lengketnya di paling atas container */
+    z-index: 1;       /* Memastikan header selalu di atas konten saat scroll */
 }
-.log-table tbody tr:last-child td {
+
+.data-table tbody tr:last-child td {
     border-bottom: none;
 }
-.log-table tbody tr:hover {
+.data-table tbody tr:hover {
     background-color: #f1f3f5;
 }
 
@@ -130,6 +142,11 @@
     border-radius: 6px;
     font-size: 1rem;
 }
+
+
+
+
+
 /* Tombol-tombol yang mungkin dipakai di modal atau filter */
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; border: none; cursor: pointer; transition: background-color 0.2s; white-space: nowrap; }
 .btn-primary { background-color: #0d6efd; color: white; }
