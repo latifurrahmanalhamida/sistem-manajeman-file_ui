@@ -10,28 +10,32 @@ import {
   downloadBackup,
 } from "../services/api";
 
+import Notification from '../components/Notification/Notification';
+
 export default function BackupPage() {
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isCreatingBackup, setIsCreatingBackup] = useState(false);
-
-  // --- PENAMBAHAN STATE UNTUK PAGINASI ---
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // Anda bisa ubah angka ini jika perlu
+  const [itemsPerPage] = useState(10);
+
+  // --- PENAMBAHAN ---
+  // 2. State untuk mengelola notifikasi
+  const [notification, setNotification] = useState({
+    visible: false,
+    message: "",
+    type: "", // 'success' atau 'error'
+  });
 
   const loadBackups = async () => {
+    // ... (Fungsi ini tidak berubah)
     setLoading(true);
     try {
       const res = await fetchBackups();
-      
-      // --- PENAMBAHAN LOGIKA SORTING ---
-      // Urutkan data berdasarkan created_at dari yang terbaru ke terlama
       const sortedData = res.data.sort((a, b) => 
         new Date(b.created_at) - new Date(a.created_at)
       );
-      
       setBackups(sortedData);
-
     } catch (err) {
       console.error("Gagal memuat backup:", err);
     } finally {
@@ -47,16 +51,30 @@ export default function BackupPage() {
     setIsCreatingBackup(true);
     try {
       await createBackup();
-      await loadBackups(); // Memuat ulang dan mengurutkan lagi
+      await loadBackups();
+      // --- PERUBAHAN ---
+      // Menampilkan notifikasi sukses
+      setNotification({
+        visible: true,
+        message: "Backup manual berhasil dibuat.",
+        type: "success",
+      });
     } catch (error) {
       console.error("Gagal membuat backup:", error);
+      // --- PERUBAHAN ---
+      // Menampilkan notifikasi error
+      setNotification({
+        visible: true,
+        message: "Gagal membuat backup manual.",
+        type: "error",
+      });
     } finally {
       setIsCreatingBackup(false);
     }
   };
 
   const handleDownload = async (id) => {
-    // ... (Fungsi ini tidak perlu diubah)
+    // ... (Fungsi ini tidak berubah)
     const backup = backups.find((b) => b.id === id);
     try {
       const res = await downloadBackup(id);
@@ -75,7 +93,9 @@ export default function BackupPage() {
   };
 
   const handleDelete = async (id) => {
-    // ... (Fungsi ini tidak perlu diubah)
+    // --- PERUBAHAN ---
+    // Mengganti window.confirm dengan logika state (jika diperlukan)
+    // Untuk saat ini, kita biarkan window.confirm karena butuh konfirmasi Ya/Tidak
     const backup = backups.find((b) => b.id === id);
     if (
       window.confirm(`Apakah Anda yakin ingin menghapus backup ${backup.filename}?`)
@@ -83,60 +103,83 @@ export default function BackupPage() {
       try {
         await deleteBackup(id);
         await loadBackups();
+        // Menampilkan notifikasi sukses
+        setNotification({
+          visible: true,
+          message: "Backup berhasil dihapus.",
+          type: "success",
+        });
       } catch (err) {
         console.error("Gagal menghapus backup:", err);
-        alert("Gagal menghapus backup!");
+        // Mengganti alert() dengan notifikasi kustom
+        setNotification({
+          visible: true,
+          message: "Gagal menghapus backup!",
+          type: "error",
+        });
       }
     }
   };
 
-  // --- LOGIKA UNTUK MEMBAGI DATA PER HALAMAN ---
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = backups.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Fungsi untuk mengubah halaman
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
+  
+  // Fungsi untuk menutup notifikasi
+  const closeNotification = () => {
+    setNotification({ ...notification, visible: false });
+  };
 
   return (
-    <div className="backup-page">
-      <h2 className="page-title">
-        <span className="icon"></span> Manajemen Backup
-      </h2>
+    // Kita tambahkan div wrapper agar notifikasi bisa ditampilkan di atas segalanya
+    <>
+      {/* --- PENAMBAHAN --- */}
+      {/* 3. Render komponen notifikasi secara kondisional */}
+      {notification.visible && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={closeNotification}
+        />
+      )}
 
-      <div className="toolbar-container">
-        <BackupToolbar onBackup={handleBackup} loading={isCreatingBackup} />
-      </div>
+      <div className="backup-page">
+        <h2 className="page-title">
+          <span className="icon"></span> Manajemen Backup
+        </h2>
 
-      <div className="card">
-        <div className="card-header">
-          <span className="icon">⚙️</span> Pengaturan Backup
+        <div className="toolbar-container">
+          <BackupToolbar onBackup={handleBackup} loading={isCreatingBackup} />
         </div>
-        <div className="card-body">
-          <BackupSettings />
-        </div>
-      </div>
 
-      <div className="card">
-        <div className="card-header">
-          <span className="icon">🗂️</span> Daftar Backup
+        <div className="card">
+          <div className="card-header">
+            <span className="icon">⚙️</span> Pengaturan Backup
+          </div>
+          <div className="card-body">
+            <BackupSettings />
+          </div>
         </div>
-        <div className="card-body">
-          <BackupTable
-            // Kirim hanya data untuk halaman saat ini
-            backups={currentItems} 
-            loading={loading}
-            onDownload={handleDownload}
-            onDelete={handleDelete}
-            // Kirim props tambahan untuk paginasi
-            itemsPerPage={itemsPerPage}
-            totalBackups={backups.length}
-            paginate={paginate}
-            currentPage={currentPage}
-          />
+
+        <div className="card">
+          <div className="card-header">
+            <span className="icon">🗂️</span> Daftar Backup
+          </div>
+          <div className="card-body">
+            <BackupTable
+              backups={currentItems} 
+              loading={loading}
+              onDownload={handleDownload}
+              onDelete={handleDelete}
+              itemsPerPage={itemsPerPage}
+              totalBackups={backups.length}
+              paginate={paginate}
+              currentPage={currentPage}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

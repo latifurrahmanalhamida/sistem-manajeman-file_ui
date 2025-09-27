@@ -6,6 +6,9 @@ import {
   updateBackupSchedule,
 } from "../../services/api";
 
+// 1. Import komponen Notifikasi
+import Notification from '../Notification/Notification';
+
 export default function BackupSetting() {
   const [backupPath, setBackupPath] = useState("");
   const [schedule, setSchedule] = useState("off");
@@ -15,7 +18,15 @@ export default function BackupSetting() {
   const [month, setMonth] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 2. State untuk mengelola notifikasi (sama seperti di BackupPage.js)
+  const [notification, setNotification] = useState({
+    visible: false,
+    message: "",
+    type: "",
+  });
+
   useEffect(() => {
+    // ... (Fungsi ini tidak perlu diubah)
     const loadSettings = async () => {
       try {
         setLoading(true);
@@ -45,15 +56,24 @@ export default function BackupSetting() {
   const handlePathSubmit = async (e) => {
     e.preventDefault();
     if (!backupPath || backupPath.trim() === "") return;
-
     const cleanPath = backupPath.trim().replace(/^"|"$/g, "");
 
     try {
       await updateBackupSettings(cleanPath);
-      alert("Backup path berhasil disimpan!");
-    } catch (err) { // <<<--- KESALAHAN ADA DI SINI, SEKARANG SUDAH DIPERBAIKI DENGAN {}
+      // 3. Ganti alert() dengan notifikasi kustom
+      setNotification({
+        visible: true,
+        message: "Backup path berhasil disimpan!",
+        type: "success",
+      });
+    } catch (err) {
       console.error(err.response?.data || err.message);
-      alert("Gagal menyimpan backup path!");
+      // Ganti alert() dengan notifikasi kustom
+      setNotification({
+        visible: true,
+        message: "Gagal menyimpan backup path!",
+        type: "error",
+      });
     }
   };
 
@@ -68,48 +88,74 @@ export default function BackupSetting() {
           schedule === "monthly" || schedule === "yearly" ? dayOfMonth : null,
         month: schedule === "yearly" ? month : null,
       });
-
-      alert("Jadwal backup berhasil disimpan!");
+      // Ganti alert() dengan notifikasi kustom
+      setNotification({
+        visible: true,
+        message: "Jadwal backup berhasil disimpan!",
+        type: "success",
+      });
     } catch (err) {
       console.error(err.response?.data || err.message);
-      alert("Gagal menyimpan jadwal backup!");
+      // Ganti alert() dengan notifikasi kustom
+      setNotification({
+        visible: true,
+        message: "Gagal menyimpan jadwal backup!",
+        type: "error",
+      });
     }
   };
 
-  return (
-    <div className="settings-grid-container">
-      {/* Kolom 1: Form Path */}
-      <form onSubmit={handlePathSubmit} className="settings-form-card">
-        <div className="form-content">
-          <h4>Lokasi Penyimpanan</h4>
-          <p className="form-description">
-            Tentukan direktori folder untuk menyimpan file backup.
-          </p>
-          <div className="form-group">
-            <label>Backup Path:</label>
-            <input
-              type="text"
-              value={backupPath}
-              onChange={(e) => setBackupPath(e.target.value)}
-              className="form-input"
-              placeholder="Contoh: D:\\backups"
-              required
-            />
-          </div>
-        </div>
-        <button type="submit" disabled={loading} className="btn btn-primary">
-          {loading ? "Menyimpan..." : "Simpan Path"}
-        </button>
-      </form>
+  // Fungsi untuk menutup notifikasi
+  const closeNotification = () => {
+    setNotification({ ...notification, visible: false });
+  };
 
-      {/* Kolom 2: Form Jadwal */}
-      <form onSubmit={handleScheduleSubmit} className="settings-form-card">
-        <div className="form-content">
-          <h4>Jadwal Otomatis</h4>
-          <p className="form-description">
-            Atur frekuensi backup otomatis sesuai kebutuhan Anda.
-          </p>
-          <div className="form-group">
+  return (
+    // Kita bungkus dengan <> agar bisa menaruh notifikasi di atasnya
+    <>
+      {/* 4. Render komponen notifikasi secara kondisional */}
+      {notification.visible && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={closeNotification}
+        />
+      )}
+
+      <div className="settings-grid-container">
+        {/* Kolom 1: Form Path */}
+        <form onSubmit={handlePathSubmit} className="settings-form-card">
+          <div className="form-content">
+            <h4>Lokasi Penyimpanan</h4>
+            <p className="form-description">
+              Tentukan direktori folder untuk menyimpan file backup.
+            </p>
+            <div className="form-group">
+              <label>Backup Path:</label>
+              <input
+                type="text"
+                value={backupPath}
+                onChange={(e) => setBackupPath(e.target.value)}
+                className="form-input"
+                placeholder="Contoh: D:\\backups"
+                required
+              />
+            </div>
+          </div>
+          <button type="submit" disabled={loading} className="btn btn-primary">
+            {loading ? "Menyimpan..." : "Simpan Path"}
+          </button>
+        </form>
+
+        {/* Kolom 2: Form Jadwal */}
+        <form onSubmit={handleScheduleSubmit} className="settings-form-card">
+          <div className="form-content">
+            <h4>Jadwal Otatis</h4>
+            <p className="form-description">
+              Atur frekuensi backup otomatis sesuai kebutuhan Anda.
+            </p>
+            {/* ... sisa form tidak berubah ... */}
+            <div className="form-group">
             <label>Frekuensi:</label>
             <select
               value={schedule}
@@ -209,11 +255,12 @@ export default function BackupSetting() {
               )}
             </>
           )}
-        </div>
-        <button type="submit" disabled={loading} className="btn btn-primary">
-          {loading ? "Menyimpan..." : "Simpan Jadwal"}
-        </button>
-      </form>
-    </div>
+          </div>
+          <button type="submit" disabled={loading} className="btn btn-primary">
+            {loading ? "Menyimpan..." : "Simpan Jadwal"}
+          </button>
+        </form>
+      </div>
+    </>
   );
 }
