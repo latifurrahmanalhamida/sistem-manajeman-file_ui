@@ -66,6 +66,55 @@
   color: #28a745;
 }
 
+/* --- PERUBAHAN DAN PENAMBAHAN STYLE UNTUK SETTINGS --- */
+
+/* Container utama untuk grid settings */
+.settings-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Kolom jadwal lebih lebar */
+  gap: 1.5rem; /* Jarak antar card */
+}
+
+/* Card untuk setiap form di dalam grid */
+.settings-form-card {
+  background: #fff;
+  border: 1px solid #e0e6ed;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Mendorong tombol ke bawah */
+}
+
+/* Wrapper untuk konten form agar tombol bisa didorong ke bawah */
+.form-content {
+  margin-bottom: 1rem;
+}
+
+/* Judul di dalam form card */
+.settings-form-card h4 {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+}
+
+/* Deskripsi di bawah judul */
+.form-description {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+}
+
+/* Membuat grid responsif, menjadi 1 kolom di layar kecil */
+@media (max-width: 992px) {
+  .settings-grid-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- AKHIR PERUBAHAN --- */
+
 /* Table */
 .backup-table table {
   width: 100%;
@@ -95,7 +144,7 @@
 
 /* Buttons */
 .btn {
-  padding: 0.45rem 0.9rem;
+  padding: 0.6rem 1.2rem; /* Sedikit lebih besar agar nyaman */
   border-radius: 0.3rem;
   font-size: 0.9rem;
   font-weight: 600;
@@ -103,6 +152,11 @@
   cursor: pointer;
   transition: background 0.2s;
   margin-right: 0.4rem;
+  align-self: flex-start; /* Tombol align ke kiri di dalam card */
+}
+
+.btn:last-child {
+  margin-right: 0;
 }
 
 .btn-primary {
@@ -132,20 +186,7 @@
   background-color: #c82333;
 }
 
-/* Backup Settings */
-.backup-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-card {
-  background: #fafafa;
-  border: 1px solid #e0e6ed;
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-}
-
+/* Form Styling (Sudah ada, sedikit penyesuaian) */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -156,13 +197,15 @@
   font-weight: 600;
   margin-bottom: 0.4rem;
   color: #2c3e50;
+  font-size: 0.9rem;
 }
 
 .form-input {
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   border: 1px solid #ced4da;
   border-radius: 0.4rem;
   font-size: 0.95rem;
+  background-color: #fff;
 }
 
 .form-input:focus {
@@ -177,4 +220,47 @@
   gap: 1rem;
 }
 
- 
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  border-radius: 0.3rem;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.page-item {
+  margin: 0;
+}
+
+.page-link {
+  color: #007bff;
+  padding: 0.6rem 0.9rem;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-left-width: 0;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.page-item:first-child .page-link {
+  border-left-width: 1px;
+}
+
+.page-link:hover {
+  background-color: #e9ecef;
+}
+
+.page-item.active .page-link {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  cursor: default;
+}

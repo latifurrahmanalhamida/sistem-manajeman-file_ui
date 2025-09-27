@@ -92,12 +92,14 @@ export const fetchBackups = () => {
 
 // Jalankan backup manual
 export const createBackup = () => {
-  return apiClient.post("/backup/run");
+  return apiClient.post("/backups/run");
 };
 
-// Download backup berdasarkan ID
+// Download 
+//  berdasarkan ID
 // export const downloadBackup = (id) =>
-//   apiClient.get(`/backup/download/${id}`, {
+//   apiClient.get(`/
+// /download/${id}`, {
 //     responseType: "blob",
 //     headers: {
 //       "Cache-Control": "no-cache",
@@ -108,7 +110,7 @@ export const createBackup = () => {
 //   });
 
 export const downloadBackup = (id) =>
-  apiClient.get(`/backup/download/${id}`, { responseType: "blob" });
+  apiClient.get(`/backups/${id}/download`, { responseType: "blob" });
 
 // export const downloadBackup = (id) => {
 //   return apiClient.get(`/backup/download/${id}`, {
@@ -124,25 +126,25 @@ export const deleteBackup = (id) => {
 // Ambil setting backup
 export const fetchBackupSettings = async () => {
   await ensureCsrfCookie(); // wajib untuk Sanctum SPA
-  const res = await apiClient.get("/backup/settings");
+  const res = await apiClient.get("/backups/settings");
   return res.data;
 };
 
 // Update setting backup
 export const updateBackupSettings = async (backup_path) => {
   await ensureCsrfCookie(); // wajib
-  const res = await apiClient.post("/backup/settings", { backup_path });
+  const res = await apiClient.post("/backups/settings", { backup_path });
   return res.data;
 };
 
 export const fetchBackupSchedule = async () => {
   await ensureCsrfCookie(); // wajib untuk Sanctum SPA
-  const res = await apiClient.get("/backup/schedule");
+  const res = await apiClient.get("/backups/schedule");
   return res.data;
 }
 export const updateBackupSchedule = async (schedule) => {
   await ensureCsrfCookie(); // wajib
-  const res = await apiClient.post("/backup/schedule", schedule );
+  const res = await apiClient.post("/backups/schedule", schedule );
   return res.data;
 };
 

@@ -51,8 +51,9 @@ export default function BackupSetting() {
     try {
       await updateBackupSettings(cleanPath);
       alert("Backup path berhasil disimpan!");
-    } catch (err) {
+    } catch (err) { // <<<--- KESALAHAN ADA DI SINI, SEKARANG SUDAH DIPERBAIKI DENGAN {}
       console.error(err.response?.data || err.message);
+      alert("Gagal menyimpan backup path!");
     }
   };
 
@@ -61,7 +62,7 @@ export default function BackupSetting() {
     try {
       await updateBackupSchedule({
         frequency: schedule,
-        time,
+        time: time || null,
         day_of_week: schedule === "weekly" ? dayOfWeek : null,
         day_of_month:
           schedule === "monthly" || schedule === "yearly" ? dayOfMonth : null,
@@ -71,123 +72,146 @@ export default function BackupSetting() {
       alert("Jadwal backup berhasil disimpan!");
     } catch (err) {
       console.error(err.response?.data || err.message);
+      alert("Gagal menyimpan jadwal backup!");
     }
   };
 
   return (
-    <div className="backup-settings">
-      {/* Form path */}
-      <form onSubmit={handlePathSubmit} className="form-card">
-        <div className="form-group">
-          <label>Backup Path:</label>
-          <input
-            type="text"
-            value={backupPath}
-            onChange={(e) => setBackupPath(e.target.value)}
-            className="form-input"
-            required
-          />
-        </div>
-
-        <button type="submit" disabled={loading} className="btn btn-primary">
-          {loading ? "⏳ Menyimpan..." : "💾 Simpan Path"}
-        </button>
-      </form>
-
-      {/* Form jadwal */}
-      <form onSubmit={handleScheduleSubmit} className="form-card">
-        <div className="form-group">
-          <label>Pencadangan:</label>
-          <select
-            value={schedule}
-            onChange={(e) => setSchedule(e.target.value)}
-            className="form-input"
-          >
-            <option value="off">Nonaktif</option>
-            <option value="daily">Harian</option>
-            <option value="weekly">Mingguan</option>
-            <option value="monthly">Bulanan</option>
-            <option value="yearly">Tahunan</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Waktu (HH:MM):</label>
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="form-input"
-            required
-          />
-        </div>
-
-        {schedule === "weekly" && (
+    <div className="settings-grid-container">
+      {/* Kolom 1: Form Path */}
+      <form onSubmit={handlePathSubmit} className="settings-form-card">
+        <div className="form-content">
+          <h4>Lokasi Penyimpanan</h4>
+          <p className="form-description">
+            Tentukan direktori folder untuk menyimpan file backup.
+          </p>
           <div className="form-group">
-            <label>Hari:</label>
-            <select
-              value={dayOfWeek}
-              onChange={(e) => setDayOfWeek(e.target.value)}
-              className="form-input"
-              required
-            >
-              <option value="Monday">Senin</option>
-              <option value="Tuesday">Selasa</option>
-              <option value="Wednesday">Rabu</option>
-              <option value="Thursday">Kamis</option>
-              <option value="Friday">Jumat</option>
-              <option value="Saturday">Sabtu</option>
-              <option value="Sunday">Minggu</option>
-            </select>
-          </div>
-        )}
-
-        {schedule === "monthly" && (
-          <div className="form-group">
-            <label>Tanggal:</label>
+            <label>Backup Path:</label>
             <input
-              type="number"
-              value={dayOfMonth}
-              min="1"
-              max="31"
-              onChange={(e) => setDayOfMonth(e.target.value)}
+              type="text"
+              value={backupPath}
+              onChange={(e) => setBackupPath(e.target.value)}
               className="form-input"
+              placeholder="Contoh: D:\\backups"
               required
             />
           </div>
-        )}
-
-        {schedule === "yearly" && (
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Bulan:</label>
-              <input
-                type="number"
-                value={month}
-                min="1"
-                max="12"
-                onChange={(e) => setMonth(e.target.value)}
-                className="form-input"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Tanggal:</label>
-              <input
-                type="number"
-                value={dayOfMonth}
-                min="1"
-                max="31"
-                onChange={(e) => setDayOfMonth(e.target.value)}
-                className="form-input"
-                required
-              />
-            </div>
-          </div>
-        )}
-
+        </div>
         <button type="submit" disabled={loading} className="btn btn-primary">
-          {loading ? "⏳ Menyimpan..." : "💾 Simpan Jadwal"}
+          {loading ? "Menyimpan..." : "Simpan Path"}
+        </button>
+      </form>
+
+      {/* Kolom 2: Form Jadwal */}
+      <form onSubmit={handleScheduleSubmit} className="settings-form-card">
+        <div className="form-content">
+          <h4>Jadwal Otomatis</h4>
+          <p className="form-description">
+            Atur frekuensi backup otomatis sesuai kebutuhan Anda.
+          </p>
+          <div className="form-group">
+            <label>Frekuensi:</label>
+            <select
+              value={schedule}
+              onChange={(e) => setSchedule(e.target.value)}
+              className="form-input"
+            >
+              <option value="off">Nonaktif</option>
+              <option value="daily">Harian</option>
+              <option value="weekly">Mingguan</option>
+              <option value="monthly">Bulanan</option>
+              <option value="yearly">Tahunan</option>
+            </select>
+          </div>
+
+          {schedule !== "off" && (
+            <>
+              <div className="form-group">
+                <label>Waktu (HH:MM):</label>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              {schedule === "weekly" && (
+                <div className="form-group">
+                  <label>Hari:</label>
+                  <select
+                    value={dayOfWeek}
+                    onChange={(e) => setDayOfWeek(e.target.value)}
+                    className="form-input"
+                    required
+                  >
+                    <option value="">Pilih Hari</option>
+                    <option value="1">Senin</option>
+                    <option value="2">Selasa</option>
+                    <option value="3">Rabu</option>
+                    <option value="4">Kamis</option>
+                    <option value="5">Jumat</option>
+                    <option value="6">Sabtu</option>
+                    <option value="0">Minggu</option>
+                  </select>
+                </div>
+              )}
+
+              {schedule === "monthly" && (
+                <div className="form-group">
+                  <label>Tanggal:</label>
+                  <input
+                    type="number"
+                    value={dayOfMonth}
+                    min="1"
+                    max="31"
+                    onChange={(e) => setDayOfMonth(e.target.value)}
+                    className="form-input"
+                    placeholder="1-31"
+                    required
+                  />
+                </div>
+              )}
+
+              {schedule === "yearly" && (
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Bulan:</label>
+                    <select
+                      value={month}
+                      onChange={(e) => setMonth(e.target.value)}
+                      className="form-input"
+                      required
+                    >
+                      <option value="">Pilih Bulan</option>
+                      {[...Array(12).keys()].map(m => (
+                        <option key={m + 1} value={m + 1}>
+                          {new Date(0, m).toLocaleString('id-ID', { month: 'long' })}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Tanggal:</label>
+                    <input
+                      type="number"
+                      value={dayOfMonth}
+                      min="1"
+                      max="31"
+                      onChange={(e) => setDayOfMonth(e.target.value)}
+                      className="form-input"
+                      placeholder="1-31"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <button type="submit" disabled={loading} className="btn btn-primary">
+          {loading ? "Menyimpan..." : "Simpan Jadwal"}
         </button>
       </form>
     </div>
