@@ -9,7 +9,7 @@ const NewSidebar = () => {
     return (
         <aside className="new-sidebar">
             <div className="sidebar-logo">
-                <img src="/images/DAOP7DRVbar.svg" alt="Logo" className="sidebar-logo-img" />
+               <img src={process.env.PUBLIC_URL + '/images/DAOP7DRVbar.svg'} alt="Logo" className="sidebar-logo-img" />
             </div>
             <ul className="sidebar-menu">
                 <li className="menu-item">
@@ -26,11 +26,11 @@ const NewSidebar = () => {
                 </li>
             </ul>
             <div className="sidebar-storage">
-                <p>Penyimpanan</p>
+                {/* <p>Penyimpanan</p>
                 <div className="storage-bar">
                     <div className="storage-bar-fill"></div>
                 </div>
-                <p className="storage-text">128 GB dari 512 GB</p>
+                <p className="storage-text">128 GB dari 512 GB</p> */}
             </div>
         </aside>
     );

@@ -5,7 +5,7 @@ import { FaUpload } from 'react-icons/fa';
 import Notification from '../Notification/Notification';
 import ProgressModal from '../Modal/ProgressModal';
 
-const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }) => {
+const FileUploadForm = ({ onUploadComplete, onConflict, onUploadError, currentFolderId = null, divisionId = null }) => {
     const [uploadQueue, setUploadQueue] = useState([]); // Array to manage multiple file uploads
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
@@ -16,21 +16,56 @@ const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }
         type: ''
     });
 
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false); // Control visibility of ProgressModal
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+    const MAX_SIZE_BYTES = 512000 * 1024; // 512MB
+    const ALLOWED_FILE_TYPES = [
+        '.mp4', '.mp3', '.wav', '.csv', '.xml', '.json', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', 
+        '.txt', '.jpg', '.jpeg', '.png', '.gif', '.zip', '.rar'
+    ];
 
     const handleFileSelection = (files) => {
-        const newFiles = Array.from(files).map(file => ({
-            file,
-            id: file.name + '_' + Date.now(),
-            status: 'pending',
-            progress: 0,
-            uploadedBytes: 0,
-            totalBytes: file.size,
-            controller: new AbortController() // Create a new AbortController for each file
-        }));
+        const selectedFiles = Array.from(files);
+        const validFiles = [];
+        const invalidFiles = [];
 
-        setUploadQueue(prevQueue => [...prevQueue, ...newFiles]);
-        setNotification({ isOpen: true, message: '', type: '' }); // Reset notification on new file selection
+        selectedFiles.forEach(file => {
+            const fileExtension = ('.' + file.name.split('.').pop()).toLowerCase();
+
+            if (file.size > MAX_SIZE_BYTES) {
+                invalidFiles.push({ name: file.name, reason: `Ukuran melebihi 512MB` });
+            } else if (!ALLOWED_FILE_TYPES.includes(fileExtension)) {
+                invalidFiles.push({ name: file.name, reason: `Format file tidak didukung` });
+            } else {
+                validFiles.push({
+                    file,
+                    id: file.name + '_' + Date.now(),
+                    status: 'pending',
+                    progress: 0,
+                    uploadedBytes: 0,
+                    totalBytes: file.size,
+                    controller: new AbortController()
+                });
+            }
+        });
+
+        if (invalidFiles.length > 0) {
+            const errorMessage = invalidFiles.map(f => `${f.name} (${f.reason})`).join(', ');
+            setNotification({
+                isOpen: true,
+                message: `File ditolak: ${errorMessage}`,
+                type: 'error'
+            });
+        }
+
+        if (validFiles.length > 0) {
+            setUploadQueue(prevQueue => [...prevQueue, ...validFiles]);
+        }
+        
+        // Clear file input so the same file can be selected again
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const handleFileChange = (e) => {
@@ -47,12 +82,10 @@ const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }
         for (let i = 0; i < uploadQueue.length; i++) {
             let fileItem = uploadQueue[i];
 
-            // Skip if already completed, failed, or canceled
             if (fileItem.status === 'completed' || fileItem.status === 'failed' || fileItem.status === 'canceled') {
                 continue;
             }
 
-            // Update status to uploading
             setUploadQueue(prevQueue =>
                 prevQueue.map(item =>
                     item.id === fileItem.id ? { ...item, status: 'uploading' } : item
@@ -63,6 +96,8 @@ const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }
             formData.append('file', fileItem.file);
             if (currentFolderId) {
                 formData.append('folder_id', currentFolderId);
+            } else if (divisionId) {
+                formData.append('division_id', divisionId);
             }
 
             try {
@@ -96,9 +131,12 @@ const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }
                             item.id === fileItem.id ? { ...item, status: 'failed' } : item
                         )
                     );
-                    break;
                 } else {
-                    setNotification({ isOpen: true, message: `Gagal mengunggah file ${fileItem.name}. Silakan coba lagi.`, type: 'error' });
+                    if (onUploadError) {
+                        onUploadError(err);
+                    } else {
+                        setNotification({ isOpen: true, message: `Gagal mengunggah file ${fileItem.name}. Silakan coba lagi.`, type: 'error' });
+                    }
                     console.error(err);
                     setUploadQueue(prevQueue =>
                         prevQueue.map(item =>
@@ -191,13 +229,12 @@ const FileUploadForm = ({ onUploadComplete, onConflict, currentFolderId = null }
 
             <ProgressModal
                 isOpen={isUploadModalOpen}
-                filesToUpload={uploadQueue} // Pass the entire queue
-                onCancel={handleCancelUpload} // Pass the cancel handler
-                onClose={() => setIsUploadModalOpen(false)} // Allow closing if needed, or remove if modal auto-closes
+                filesToUpload={uploadQueue}
+                onCancel={handleCancelUpload}
+                onClose={() => setIsUploadModalOpen(false)}
             />
         </>
     );
 }
 
 export default FileUploadForm;
-

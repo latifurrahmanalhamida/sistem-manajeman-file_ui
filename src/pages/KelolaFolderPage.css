@@ -36,3 +36,22 @@
   gap: 10px;
   font-weight: 500;
 }
+.page-header .button-group {
+  display: flex;
+  gap: 12px;
+}
+
+/* BARU: Style untuk tombol sekunder (Lihat Sampah, Kembali) */
+.btn-secondary {
+  background-color: #f8f9fa;
+  color: #212529;
+  border: 1px solid #dee2e6;
+}
+.btn-secondary:hover {
+  background-color: #e2e6ea;
+}
+
+/* BARU: Style untuk tombol aksi di dalam tabel sampah */
+.btn-restore {
+  color: #198754; /* Warna hijau untuk restore */
+}

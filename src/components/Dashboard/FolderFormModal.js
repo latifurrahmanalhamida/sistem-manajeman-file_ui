@@ -6,7 +6,8 @@ import Modal from '../Modal/Modal';
 // Kita bisa gunakan kembali CSS dari form lain untuk konsistensi
 import './DivisiFormModal.css';
 
-const FolderFormModal = ({ isOpen, onClose, onSave, folderToEdit, parentId }) => {
+// Tambahkan divisionId di akhir
+const FolderFormModal = ({ isOpen, onClose, onSave, folderToEdit, parentId, divisionId }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,9 +32,18 @@ const FolderFormModal = ({ isOpen, onClose, onSave, folderToEdit, parentId }) =>
 
     const folderData = {
       name,
-      parent_folder_id: computedParentFolderId,
+      parent_id: computedParentFolderId,
     };
 
+    // BARU: Jika divisionId ada (dikirim oleh Super Admin), tambahkan ke data
+    if (divisionId) {
+      folderData.division_id = divisionId;
+    }
+
+    // BARU: Jika divisionId ada (dikirim oleh Super Admin), tambahkan ke data
+    if (divisionId) {
+      folderData.division_id = divisionId;
+    }
     try {
       if (isEditMode) {
         await apiClient.put(`/admin/folders/${folderToEdit.id}`, folderData);

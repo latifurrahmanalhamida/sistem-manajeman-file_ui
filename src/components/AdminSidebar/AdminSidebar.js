@@ -1,16 +1,14 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
-// PERUBAHAN: Impor file CSS yang baru
 import '../Sidebar/Sidebar.css'; 
 import { FaUsers, FaFolder, FaChartLine, FaArrowLeft } from 'react-icons/fa';
 
 const AdminSidebar = () => {
     return (
-        // PERUBAHAN: Ganti className menjadi 'sidebar'
         <aside className="sidebar">
             <div>
                 <div className="sidebar-header">
-                    <img src="/images/DAOP7DRVE.svg" alt="Logo Panel Admin" className="sidebar-logo" />
+                    <img src={process.env.PUBLIC_URL + '/images/DAOP7DRVE.svg'} alt="Logo Panel Admin" className="sidebar-logo" />
                 </div>
                 {/* PERUBAHAN: Menyamakan struktur dengan NavLink */}
                 <nav className="sidebar-nav">
@@ -21,7 +19,7 @@ const AdminSidebar = () => {
                         <FaFolder /> Kelola Folder 
                     </NavLink>
                     <NavLink to="/panel-admin/activities" className="sidebar-link"> 
-                        <FaChartLine /> Laporan Aktivitas 
+                        <FaChartLine /> Log Aktivitas 
                     </NavLink>
                 </nav>
             </div>

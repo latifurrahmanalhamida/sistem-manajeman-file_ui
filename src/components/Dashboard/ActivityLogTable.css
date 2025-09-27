@@ -1,121 +1,164 @@
 /* src/components/Dashboard/ActivityLogTable.css */
+
+/* --- Main Wrapper Card Style --- */
 .table-wrapper {
     background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem; /* Padding diperbesar */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    overflow: auto; /* Mengizinkan scroll horizontal dan vertikal */
-    max-height: 70vh; /* Batasi tinggi container agar bisa di-scroll */
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+.table-container {
+    max-height: 65vh;
+    overflow-x: auto;
+    overflow-y: auto;
+    width: 100%;
+    padding-top: 0%;
 }
 
-/* --- STYLE BARU UNTUK FILTER --- */
-.filter-container {
-    margin-bottom: 1.5rem;
+/* --- New Filter Controls Layout --- */
+.filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.search-group {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    min-width: 350px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-group:focus-within {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.search-group svg {
+    color: #6c757d;
+    margin-right: 8px;
 }
 
 .filter-input {
     width: 100%;
-    padding: 10px 15px;
+    padding: 12px 0;
     font-size: 1rem;
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+.actions-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.date-input {
+    padding: 10px 14px;
+    font-size: 0.9rem;
     border: 1px solid #ced4da;
     border-radius: 6px;
-    box-sizing: border-box;
+    max-width: 150px;
 }
-/* -------------------------------- */
 
+/* --- Improved Table Styles --- */
 .data-table {
     width: 100%;
     border-collapse: collapse;
 }
 
 .data-table th, .data-table td {
-    padding: 14px 15px; /* Padding diperbesar */
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
 }
 
 .data-table th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: #ffffff; /* Latar belakang solid */
-    font-weight: 600; /* Dibuat lebih tebal */
-    color: #495057;
-    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #343a40;
+    font-size: 0.85rem;
     text-transform: uppercase;
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
+    letter-spacing: 0.5px;
 }
 
 .data-table tbody tr:hover {
-    background-color: #f8f9fa; /* Efek hover pada baris */
+    background-color: #f1f3f5;
 }
 
-/* --- STYLE BARU UNTUK KOLOM AKSI --- */
+/* --- Action Icon & Status Badge Styles --- */
 .log-action {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 500;
 }
-.log-action .icon-create { color: #198754; } /* Hijau */
-.log-action .icon-update { color: #0d6efd; } /* Biru */
-.log-action .icon-delete { color: #dc3545; } /* Merah */
-.log-action .icon-restore { color: #6f42c1; } /* Ungu */
-/* ---------------------------------- */
+
+.action-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.action-icon-wrapper svg {
+    color: #fff;
+    width: 16px;
+    height: 16px;
+}
+
+.action-icon-wrapper.create { background-color: #28a745; }
+.action-icon-wrapper.update { background-color: #0d6efd; }
+.action-icon-wrapper.delete { background-color: #dc3545; }
+.action-icon-wrapper.restore { background-color: #fd7e14; }
+.action-icon-wrapper.default { background-color: #6c757d; }
+
 
 .log-target {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem;
-    color: #6c757d;
+    color: #495057;
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .log-time {
     font-size: 0.9rem;
     color: #6c757d;
+    white-space: nowrap;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 12px; /* Dibuat lebih bulat */
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
 }
+
 .status-berhasil {
     background-color: #d1e7dd;
     color: #0f5132;
 }
+
 .status-gagal {
     background-color: #f8d7da;
     color: #842029;
-}
-.filter-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap; /* Agar responsif di layar kecil */
-    gap: 1rem;
-}
-
-.text-filter-group {
-    flex-grow: 1;
-    min-width: 300px;
-}
-
-.date-filter-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.date-input {
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
 }

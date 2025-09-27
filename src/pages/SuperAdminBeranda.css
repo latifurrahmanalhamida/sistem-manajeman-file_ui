@@ -18,48 +18,14 @@
     margin-bottom: 20px;
 }
 
+/* [DIMODIFIKASI] Diubah untuk menangani satu kolom saja (tabel aktivitas) */
 .summary-grid {
     display: grid;
-    grid-template-columns: 1fr 2fr; /* 1/3 untuk ringkasan, 2/3 untuk tabel */
+    grid-template-columns: 1fr; /* Hanya satu kolom, jadi akan mengisi lebar penuh */
     gap: 20px;
 }
 
-/* --- Styling untuk Progress Bar --- */
-.progress-bar-container {
-    height: 8px;
-    width: 100%;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: #007bff;
-    border-radius: 4px;
-    transition: width 0.5s ease-in-out;
-}
-
-/* --- Styling untuk Ringkasan & Tabel --- */
-.summary-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.summary-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-.summary-list li:last-child {
-    border-bottom: none;
-}
-.summary-list li span {
-    color: #6c757d;
-}
-
+/* --- Styling untuk Tabel Aktivitas --- */
 .recent-uploads-table {
     width: 100%;
     border-collapse: collapse;
@@ -67,19 +33,24 @@
 
 .recent-uploads-table td,
 .recent-uploads-table th {
-    padding: 12px 8px;
+    padding: 12px 15px; /* Sedikit padding tambahan */
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
 }
 
 .recent-uploads-table th {
     font-weight: 500;
     color: #6c757d;
     font-size: 0.9rem;
+    text-transform: uppercase;
 }
 
+/* Hapus styling yang tidak lagi digunakan */
+/* .summary-list, .progress-bar-container sudah tidak ada di JSX */
+
 @media (max-width: 992px) {
-    .summary-grid {
+    .charts-grid {
         grid-template-columns: 1fr;
     }
 }
