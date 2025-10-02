@@ -289,7 +289,7 @@ const RecentFilesPage = () => {
     return (
         <div className="division-dashboard">
             <div className="dashboard-toolbar">
-                <h1>Semua File</h1>
+                <h1>File Terbaru</h1>
             </div>
             <FilterBar
                 onFileTypeChange={setFileType}
