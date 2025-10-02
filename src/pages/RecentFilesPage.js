@@ -107,6 +107,46 @@ const RecentFilesPage = () => {
 
     }, [files, fileType, modifiedDate, ownerSearch, divisionFilter, searchQuery]);
 
+    const getRelativeTimeGroup = (date) => {
+        const now = new Date();
+        const fileDate = new Date(date);
+
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        const startOfWeek = new Date(startOfToday);
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        startOfWeek.setDate(diff);
+
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+        if (fileDate >= startOfToday) return "Hari ini";
+        if (fileDate >= startOfWeek) return "Minggu ini";
+        if (fileDate >= startOfMonth) return "Bulan ini";
+        if (fileDate >= startOfYear) return "Tahun ini";
+        return "Lebih lama";
+    };
+
+    const groupedFiles = useMemo(() => {
+        const groups = {
+            "Hari ini": [],
+            "Minggu ini": [],
+            "Bulan ini": [],
+            "Tahun ini": [],
+            "Lebih lama": [],
+        };
+
+        filteredAndSortedFiles.forEach(file => {
+            const group = getRelativeTimeGroup(file.updated_at);
+            if (groups[group]) {
+                groups[group].push(file);
+            }
+        });
+
+        return groups;
+    }, [filteredAndSortedFiles]);
+
     // Handlers from DashboardPage
     const handleDownload = async (file) => {
         try {
@@ -298,27 +338,38 @@ const RecentFilesPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredAndSortedFiles.map(file => (
-                                <tr
-                                    key={file.id}
-                                    onClick={() => handleFileSelect(file.id)}
-                                    className={selectedFileIds.includes(file.id) ? 'selected' : ''}
-                                >
-                                    <td className="nama-cell">
-                                        <button onClick={(e) => { e.stopPropagation(); handleToggleFavorite(file); }} className="action-button favorite-button" title="Favorite">
-                                            {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
-                                        </button>
-                                        <span className="file-icon">
-                                            {getFileIcon(file.tipe_file, file.nama_file_asli)}
-                                        </span>
-                                        <span title={file.nama_file_asli}>
-                                            {truncateFilename(file.nama_file_asli, 54)}
-                                        </span>
-                                    </td>
-                                    <td>{file.uploader ? file.uploader.name : 'User Dihapus'}</td>
-                                    <td>{new Date(file.updated_at).toLocaleDateString('id-ID')}</td>
-                                    <td>{(file.ukuran_file / 1024 / 1024).toFixed(2)} MB</td>
-                                </tr>
+                            {Object.entries(groupedFiles).map(([group, filesInGroup]) => (
+                                filesInGroup.length > 0 && (
+                                    <React.Fragment key={group}>
+                                        <tr>
+                                            <td colSpan="4" className="group-header">
+                                                <strong>{group}</strong>
+                                            </td>
+                                        </tr>
+                                        {filesInGroup.map(file => (
+                                            <tr
+                                                key={file.id}
+                                                onClick={() => handleFileSelect(file.id)}
+                                                className={selectedFileIds.includes(file.id) ? 'selected' : ''}
+                                            >
+                                                <td className="nama-cell">
+                                                    <button onClick={(e) => { e.stopPropagation(); handleToggleFavorite(file); }} className="action-button favorite-button" title="Favorite">
+                                                        {file.is_favorited ? <FaStar color="#ffc107" /> : <FaRegStar color="#6c757d" />}
+                                                    </button>
+                                                    <span className="file-icon">
+                                                        {getFileIcon(file.tipe_file, file.nama_file_asli)}
+                                                    </span>
+                                                    <span title={file.nama_file_asli}>
+                                                        {truncateFilename(file.nama_file_asli, 54)}
+                                                    </span>
+                                                </td>
+                                                <td>{file.uploader ? file.uploader.name : 'User Dihapus'}</td>
+                                                <td>{new Date(file.updated_at).toLocaleDateString('id-ID')}</td>
+                                                <td>{(file.ukuran_file / 1024 / 1024).toFixed(2)} MB</td>
+                                            </tr>
+                                        ))}
+                                    </React.Fragment>
+                                )
                             ))}
                         </tbody>
                     </table>
