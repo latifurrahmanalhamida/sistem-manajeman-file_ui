@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { VscEye, VscEyeClosed } from 'react-icons/vsc';
 import { createUser } from '../services/api';
 import './TambahUserPage.css';
 import Notification from '../components/Notification/Notification';
@@ -11,6 +12,7 @@ const TambahUserPage = () => {
     });
     const [errors, setErrors] = useState({});
     const [notification, setNotification] = useState({ isOpen: false, message: '', type: '' });
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -92,7 +94,12 @@ const TambahUserPage = () => {
                     </div>
                     <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                         <label>Password</label>
-                        <input type="password" name="password" value={formData.password} onChange={handleChange} className="form-input" />
+                        <div className="password-input-container">
+                            <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} className="form-input" />
+                            <span onClick={() => setShowPassword(!showPassword)} className="password-toggle-icon">
+                                {showPassword ? <VscEyeClosed /> : <VscEye />}
+                            </span>
+                        </div>
                         {errors.password && <p className="error-message-field">{errors.password}</p>}
                     </div>
                 </div>
@@ -109,4 +116,3 @@ const TambahUserPage = () => {
 };
 
 export default TambahUserPage;
-
