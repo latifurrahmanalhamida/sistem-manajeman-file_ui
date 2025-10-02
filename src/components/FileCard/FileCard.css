@@ -37,10 +37,11 @@
 }
 
 .file-card-name {
-    font-weight: 600;
-    color: #343a40;
+    font-weight: 500; /* Medium weight is often better than semibold */
+    color: #374151;
     word-break: break-all;
     margin: 0;
+    font-size: 0.875rem; /* Standardize to 14px */
 }
 
 .favorite-button-grid {
@@ -51,7 +52,7 @@
 }
 
 .file-card-info {
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* Slightly smaller for secondary info (12px) */
     color: #6b7280;
     display: flex;
     gap: 1rem;

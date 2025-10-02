@@ -9,7 +9,7 @@
 
 .left-pane {
     flex: 1;
-    background-image: url('../../public/images/KeretaLukisan.png'); /* Path disesuaikan */
+    background-image: url('../../public/images/imgKereta.jpg'); /* Path disesuaikan */
     background-size: cover;
     background-position: left;
     display: flex;
@@ -113,6 +113,19 @@
     border-color: #0D2A51;
     box-shadow: 0 0 0 3px rgba(13, 42, 81, 0.1);
     outline: none;
+}
+
+.password-input-container {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
 }
 
 .login-button {

@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { checkLoginLockout } from '../services/api'; // Import the lockout checker
 import './LoginPage.css';
-import { VscError } from "react-icons/vsc";
+import { VscError, VscEye, VscEyeClosed } from "react-icons/vsc";
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const [loginInput, setLoginInput] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
 
     // State untuk mengelola lockout
@@ -90,14 +91,19 @@ const LoginPage = () => {
                         </div>
                         <div className="input-group">
                             <label>Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                placeholder="••••••••"
-                                disabled={isLocked} // Disable input saat di-lock
-                            />
+                            <div className="password-input-container">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    placeholder="••••••••"
+                                    disabled={isLocked}
+                                />
+                                <span onClick={() => setShowPassword(!showPassword)} className="password-toggle-icon">
+                                    {showPassword ? <VscEyeClosed /> : <VscEye />}
+                                </span>
+                            </div>
                         </div>
 
                         {error && (

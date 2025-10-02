@@ -44,6 +44,19 @@
     cursor: not-allowed;
 }
 
+.password-input-container {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
 .pengguna-form .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -105,4 +118,3 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
-

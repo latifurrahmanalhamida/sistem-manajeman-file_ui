@@ -76,6 +76,19 @@
     color: #adb5bd;
 }
 
+.password-input-container {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
 .error-message-field {
     color: #e63946;
     font-size: 0.85rem;

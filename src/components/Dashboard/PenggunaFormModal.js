@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { VscEye, VscEyeClosed } from 'react-icons/vsc';
 import apiClient from '../../services/api';
 import Modal from '../Modal/Modal';
 import './PenggunaFormModal.css';
@@ -14,6 +15,7 @@ const PenggunaFormModal = ({ isOpen, onClose, onSave, userToEdit }) => {
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDivisionDisabled, setIsDivisionDisabled] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const isEditMode = userToEdit !== null;
 
@@ -177,7 +179,12 @@ const PenggunaFormModal = ({ isOpen, onClose, onSave, userToEdit }) => {
                 </div>
                 <div className="form-group full-width">
                     <label htmlFor="password">Password</label>
-                    <input id="password" name="password" type="password" onChange={handleInputChange} placeholder={isEditMode ? 'Kosongkan jika tidak ingin diubah' : ''} />
+                    <div className="password-input-container">
+                        <input id="password" name="password" type={showPassword ? "text" : "password"} onChange={handleInputChange} placeholder={isEditMode ? 'Kosongkan jika tidak ingin diubah' : ''} />
+                        <span onClick={() => setShowPassword(!showPassword)} className="password-toggle-icon">
+                            {showPassword ? <VscEyeClosed /> : <VscEye />}
+                        </span>
+                    </div>
                     {errors.password && <p className="error-message-field">{errors.password}</p>}
                 </div>
                 <div className="form-row">
@@ -208,4 +215,3 @@ const PenggunaFormModal = ({ isOpen, onClose, onSave, userToEdit }) => {
 };
 
 export default PenggunaFormModal;
-

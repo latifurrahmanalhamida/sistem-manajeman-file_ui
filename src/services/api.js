@@ -65,6 +65,7 @@ export const getDivisionActivityLogs = () => apiClient.get('/admin/activity-logs
 
 // File Management
 export const getFiles = () => apiClient.get('/files');
+export const getAllFiles = () => apiClient.get('/files/all');
 export const uploadFile = (formData, options = {}, config = {}) => {
     const { overwrite = false, newName = null, folderId = null } = options;
     if (overwrite) {
