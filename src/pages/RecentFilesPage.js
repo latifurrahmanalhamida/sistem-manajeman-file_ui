@@ -1,6 +1,6 @@
 // src/pages/RecentFilesPage.js
 import React, { useState, useMemo, useEffect } from 'react';
-import { getRecentFiles, getDivisions, toggleFavorite, downloadFile, deleteFile, renameFile } from '../services/api';
+import { getAllFiles, getDivisions, toggleFavorite, downloadFile, deleteFile, renameFile } from '../services/api';
 import useFileFetcher from '../hooks/useFileFetcher';
 import FilterBar from '../components/FilterBar/FilterBar';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +15,7 @@ import Modal from '../components/Modal/Modal';
 import './DashboardView.css';
 
 const RecentFilesPage = () => {
-    const { files, setFiles, loading, refresh: fetchFiles } = useFileFetcher(getRecentFiles);
+    const { files, setFiles, loading, refresh: fetchFiles } = useFileFetcher(getAllFiles);
     const { user, searchQuery } = useAuth();
 
     const [fileType, setFileType] = useState('');
@@ -47,7 +47,7 @@ const RecentFilesPage = () => {
         fetchDivisionsData();
     }, []);
 
-    const filteredFiles = useMemo(() => {
+    const filteredAndSortedFiles = useMemo(() => {
         let currentFiles = [...files];
 
         // Apply global search query first
@@ -101,7 +101,10 @@ const RecentFilesPage = () => {
                 file.division?.id === parseInt(divisionFilter)
             );
         }
-        return currentFiles;
+
+        // Finally, sort by most recent
+        return currentFiles.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+
     }, [files, fileType, modifiedDate, ownerSearch, divisionFilter, searchQuery]);
 
     // Handlers from DashboardPage
@@ -212,7 +215,7 @@ const RecentFilesPage = () => {
     };
 
     const handleSelectAllClick = () => {
-        const allFileIds = filteredFiles.map(file => file.id);
+        const allFileIds = filteredAndSortedFiles.map(file => file.id);
         setSelectedFileIds(allFileIds);
     };
 
@@ -241,12 +244,12 @@ const RecentFilesPage = () => {
         }
     };
 
-    if (loading) return <div>Loading recent files...</div>;
+    if (loading) return <div>Loading files...</div>;
 
     return (
         <div className="division-dashboard">
             <div className="dashboard-toolbar">
-                <h1>File Terbaru</h1>
+                <h1>Semua File</h1>
             </div>
             <FilterBar
                 onFileTypeChange={setFileType}
@@ -295,7 +298,7 @@ const RecentFilesPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredFiles.map(file => (
+                            {filteredAndSortedFiles.map(file => (
                                 <tr
                                     key={file.id}
                                     onClick={() => handleFileSelect(file.id)}
@@ -322,7 +325,7 @@ const RecentFilesPage = () => {
                 </div>
             ) : (
                 <div className="stats-grid">
-                    {filteredFiles.map(file => (
+                    {filteredAndSortedFiles.map(file => (
                         <FileCard
                             key={file.id}
                             file={file}
